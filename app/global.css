@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply min-h-screen bg-black text-slate-50 font-sans;
+}
+
+section {
+  scroll-margin-top: 5rem;
+}
+
+/* Better focus for keyboard navigation */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #2563eb;
+}

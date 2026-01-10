@@ -1,0 +1,10 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lgp-gradient" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <path d="M30 130 C60 40, 140 40, 150 110" stroke="url(#lgp-gradient)" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <circle cx="150" cy="110" r="10" fill="url(#lgp-gradient)"/>
+</svg>

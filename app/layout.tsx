@@ -1,35 +1,9 @@
-import type { Metadata } from "next";
 import "./globals.css";
-import { Header } from "@/components/Header";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "LetsGoPlaces – AI Trip Planner Coming Soon",
-  description:
-    "LetsGoPlaces is your AI-powered travel companion that creates personalized trips anywhere in the world in seconds.",
-  metadataBase: new URL("https://letsgoplaces.co.uk"),
-  openGraph: {
-    title: "LetsGoPlaces – AI Trip Planner Coming Soon",
-    description:
-      "Plan perfect trips in Paris, Tokyo, New York and beyond with a calm, smart AI travel companion.",
-    url: "https://letsgoplaces.co.uk",
-    siteName: "LetsGoPlaces",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "LetsGoPlaces – AI Travel Companion"
-      }
-    ],
-    type: "website"
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "LetsGoPlaces – AI Trip Planner Coming Soon",
-    description:
-      "Your AI travel companion for stress-free trips worldwide.",
-    images: ["/og-image.png"]
-  }
+  title: "LetsGoPlaces – Calm, Smart Travel Planning",
+  description: "A calm, stylish travel companion that crafts beautiful itineraries for the way you travel.",
 };
 
 export default function RootLayout({
@@ -38,10 +12,39 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className="bg-black text-slate-50 antialiased">
-        <Header />
-        {children}
+    <html lang="en">
+      <body className="bg-black text-white antialiased">
+        <div className="min-h-screen flex flex-col">
+          {/* NAVBAR */}
+          <header className="w-full border-b border-white/10 bg-black/70 backdrop-blur">
+            <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+              <div className="text-lg font-semibold tracking-tight">
+                Lets<span className="text-blue-400">Go</span>Places
+              </div>
+              <div className="hidden sm:flex items-center gap-6 text-sm text-slate-300">
+                <a href="#how-it-works" className="hover:text-white">How it works</a>
+                <a href="#trip-types" className="hover:text-white">Trips</a>
+                <a href="#sample" className="hover:text-white">Sample</a>
+                <a
+                  href="/plan"
+                  className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold"
+                >
+                  Start planning
+                </a>
+              </div>
+            </nav>
+          </header>
+
+          <main className="flex-1">{children}</main>
+
+          {/* FOOTER */}
+          <footer className="border-t border-white/10 bg-black/80">
+            <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+              <p>© {new Date().getFullYear()} LetsGoPlaces. All rights reserved.</p>
+              <p>Built for travelers who prefer calm over chaos.</p>
+            </div>
+          </footer>
+        </div>
       </body>
     </html>
   );

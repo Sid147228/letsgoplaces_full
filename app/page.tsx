@@ -4,74 +4,116 @@ export default function Home() {
   return (
     <div className="bg-black text-white">
       {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10">
-          <Image
-            src="/hero.jpg"
-            alt="City at night"
-            fill
-            className="object-cover opacity-40"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black" />
-        </div>
-
-        <div className="max-w-6xl mx-auto px-6 pt-24 pb-32 flex flex-col md:flex-row items-center gap-12">
-          <div className="flex-1 text-center md:text-left">
+      <section className="border-b border-white/10 bg-gradient-to-b from-black via-slate-950 to-black">
+        <div className="max-w-6xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-4">
               AI TRIP PLANNING, REIMAGINED
             </p>
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-              A calm way to plan
-              <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                your next trip.
+            <h1 className="text-4xl md:text-5xl font-semibold tracking-tight mb-5">
+              Smarter than{" "}
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                endless tabs
               </span>
+              , calmer than spreadsheets.
             </h1>
-            <p className="text-slate-300 text-sm md:text-base mb-8 max-w-xl">
-              LetsGoPlaces is your stylish travel companion that quietly builds
-              thoughtful itineraries for Paris, Tokyo, New York — and everywhere in between.
+            <p className="text-sm md:text-base text-slate-300 mb-6 max-w-xl">
+              LetsGoPlaces is your calm, stylish travel companion that quietly builds
+              beautiful itineraries for Paris, Tokyo, New York — and beyond.
             </p>
 
-            <div className="space-y-4">
-              <form className="flex flex-col sm:flex-row gap-3 w-full max-w-md md:max-w-lg">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="px-4 py-3 rounded-full bg-white text-black placeholder-slate-500 text-sm w-full"
-                />
-                <button
-                  type="submit"
-                  className="px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white font-semibold text-sm"
-                >
-                  Join waitlist
-                </button>
-              </form>
-              <p className="text-xs text-slate-400">
-                Or{" "}
-                <a href="/plan" className="underline">
-                  try planning a sample trip
-                </a>{" "}
-                in under a minute.
-              </p>
-            </div>
+            <form className="flex flex-col sm:flex-row gap-3 w-full max-w-md mb-3">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="px-4 py-3 rounded-full bg-white text-black placeholder-slate-500 text-sm w-full"
+              />
+              <button
+                type="submit"
+                className="px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white font-semibold text-sm"
+              >
+                Join waitlist
+              </button>
+            </form>
+            <p className="text-xs text-slate-400">
+              No spam, just early access. Or{" "}
+              <a href="/plan" className="underline">
+                try a sample trip →
+              </a>
+            </p>
           </div>
 
-          <div className="flex-1 w-full">
-            <div className="rounded-2xl bg-white/5 border border-white/10 p-5 backdrop-blur shadow-xl max-w-md mx-auto">
-              <p className="text-xs text-slate-400 mb-2">Sample itinerary</p>
-              <h2 className="text-lg font-semibold mb-3">Tokyo – 4 days, food & city lights</h2>
-              <div className="space-y-4 text-xs text-slate-300">
+          {/* Right side “wizard preview” */}
+          <div className="w-full">
+            <div className="rounded-2xl bg-white/5 border border-white/10 p-5 backdrop-blur shadow-xl text-xs space-y-4 max-w-md ml-auto">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-slate-300 text-[11px]">Trip setup</p>
+                <span className="text-[10px] text-slate-500">Preview</span>
+              </div>
+
+              <div className="space-y-3">
                 <div>
-                  <p className="text-slate-400 uppercase text-[10px] mb-1">Day 1 – Arrival & Shibuya</p>
-                  <p>Check into a calm hotel near Shinjuku. Evening walk through Shibuya Crossing and a quiet izakaya nearby.</p>
+                  <label className="block text-[10px] text-slate-400 mb-1">
+                    Where are you going?
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button className="px-3 py-2 rounded-full bg-white text-black text-[11px]">
+                      Paris
+                    </button>
+                    <button className="px-3 py-2 rounded-full bg-white/10 text-[11px]">
+                      Tokyo
+                    </button>
+                    <button className="px-3 py-2 rounded-full bg-white/10 text-[11px]">
+                      New York
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-slate-400 uppercase text-[10px] mb-1">Day 2 – Neighborhoods</p>
-                  <p>Slow morning in Daikanyama, coffee and bookstores. Afternoon in Harajuku, evening at an omakase counter.</p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] text-slate-400 mb-1">
+                      Start date
+                    </label>
+                    <div className="px-3 py-2 rounded-full bg-white/5 border border-white/10 text-[11px] text-slate-300">
+                      12 Apr 2026
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 mb-1">
+                      End date
+                    </label>
+                    <div className="px-3 py-2 rounded-full bg-white/5 border border-white/10 text-[11px] text-slate-300">
+                      17 Apr 2026
+                    </div>
+                  </div>
                 </div>
+
                 <div>
-                  <p className="text-slate-400 uppercase text-[10px] mb-1">Day 3 – Culture & Contrast</p>
-                  <p>Asakusa temples, Sumida River walk, rooftop cocktails in Roppongi at night.</p>
+                  <label className="block text-[10px] text-slate-400 mb-1">
+                    Travel style
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Slow & scenic", "Food‑first", "Nightlife", "Family‑friendly"].map(
+                      (tag) => (
+                        <span
+                          key={tag}
+                          className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-slate-200"
+                        >
+                          {tag}
+                        </span>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/10">
+                  <p className="text-[10px] text-slate-400 mb-1">
+                    Example day in Paris
+                  </p>
+                  <p className="text-[11px] text-slate-200">
+                    Morning: Slow café breakfast near the Seine. Afternoon: Louvre & Tuileries.
+                    Evening: Rooftop drinks with Eiffel views.
+                  </p>
                 </div>
               </div>
             </div>
@@ -79,35 +121,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TRIP TYPES */}
-      <section id="trip-types" className="max-w-6xl mx-auto px-6 py-20">
+      {/* TRIP STYLES */}
+      <section id="trip-types" className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-center">
-          Crafted for every kind of trip
+          Built for how you like to travel
         </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
           {[
-            { name: "Couples", img: "/couples.jpg", tagline: "Slow mornings, late dinners." },
-            { name: "Family", img: "/family.jpg", tagline: "Memories without the chaos." },
-            { name: "Solo", img: "/solo.jpg", tagline: "Curated days, at your own pace." },
-            { name: "Road Trip", img: "/roadtrip.jpg", tagline: "Routes, stops, and scenic pauses." },
-          ].map((type) => (
+            { name: "Couples", line: "Slow mornings, late dinners, hidden corners.", img: "/couples.jpg" },
+            { name: "Family", line: "Memorable days without the planning chaos.", img: "/family.jpg" },
+            { name: "Solo", line: "Curated days, just for your pace.", img: "/solo.jpg" },
+            { name: "Road trip", line: "Routes, stops, viewpoints, and coffee breaks.", img: "/roadtrip.jpg" },
+          ].map((t) => (
             <div
-              key={type.name}
-              className="relative rounded-xl overflow-hidden group bg-white/5 border border-white/10"
+              key={t.name}
+              className="rounded-xl overflow-hidden bg-white/5 border border-white/10"
             >
-              <div className="relative h-40">
-                <Image
-                  src={type.img}
-                  alt={type.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="relative h-32">
+                <Image src={t.img} alt={t.name} fill className="object-cover" />
               </div>
               <div className="p-4">
-                <h3 className="text-base font-semibold mb-1">{type.name}</h3>
-                <p className="text-xs text-slate-400">{type.tagline}</p>
+                <p className="text-xs uppercase tracking-[0.15em] text-slate-400 mb-1">
+                  {t.name}
+                </p>
+                <p className="text-xs text-slate-300">{t.line}</p>
               </div>
             </div>
           ))}
@@ -115,64 +152,77 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="bg-gradient-to-b from-black via-slate-950 to-black py-20 px-6">
-        <div className="max-w-5xl mx-auto text-center md:text-left">
+      <section
+        id="how-it-works"
+        className="bg-gradient-to-b from-black via-slate-950 to-black py-18 px-6 border-y border-white/10"
+      >
+        <div className="max-w-5xl mx-auto py-16">
           <h2 className="text-2xl md:text-3xl font-semibold mb-10 text-center">
             A calmer way to plan
           </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-sm">
             {[
               {
-                icon: "🧭",
-                title: "Share your vibe",
-                desc: "Destination, dates, budget, pace — just a few details and your style of travel.",
+                title: "Tell us your plan",
+                desc: "Destination, dates, budget, vibe. Just the essentials — we handle the structure.",
               },
               {
-                icon: "✨",
-                title: "We shape your days",
-                desc: "AI builds a thoughtful, structured itinerary with mornings, afternoons, and evenings.",
+                title: "AI builds your trip",
+                desc: "Thoughtful, day‑by‑day itineraries with mornings, afternoons, and evenings that match your style.",
               },
               {
-                icon: "📍",
                 title: "Tweak, save, go",
-                desc: "Edit what you like, save what you love, and head out with clarity.",
+                desc: "Adjust what you like, save favorites, and head out with clarity instead of chaos.",
               },
-            ].map((step) => (
-              <div key={step.title} className="text-sm">
-                <div className="text-3xl mb-3">{step.icon}</div>
-                <h3 className="text-base font-semibold mb-2">{step.title}</h3>
-                <p className="text-slate-400 text-xs leading-relaxed">{step.desc}</p>
+            ].map((s, i) => (
+              <div key={s.title}>
+                <p className="text-xs text-slate-500 mb-2">Step 0{i + 1}</p>
+                <h3 className="text-base font-semibold mb-2">{s.title}</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* SAMPLE CITY STRIP */}
-      <section id="sample" className="max-w-6xl mx-auto px-6 py-20">
+      {/* EXAMPLE ITINERARIES */}
+      <section id="examples" className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-center">
-          Paris, Tokyo, New York — and beyond
+          Real trips, not generic lists
         </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
           {[
-            { name: "Paris", img: "/paris.jpg", line: "Cafés, galleries, and golden-hour walks." },
-            { name: "Tokyo", img: "/tokyo.jpg", line: "Neon nights, quiet mornings, ramen stops." },
-            { name: "New York", img: "/nyc.jpg", line: "Rooftops, parks, and late-night slices." },
-          ].map((city) => (
-            <div key={city.name} className="rounded-xl overflow-hidden bg-white/5 border border-white/10">
-              <div className="relative h-40">
-                <Image
-                  src={city.img}
-                  alt={city.name}
-                  fill
-                  className="object-cover"
-                />
+            {
+              city: "Paris",
+              img: "/paris.jpg",
+              days: "4 days",
+              focus: "Art, cafés, golden hour walks.",
+            },
+            {
+              city: "Tokyo",
+              img: "/tokyo.jpg",
+              days: "5 days",
+              focus: "Food, neighborhoods, neon nights.",
+            },
+            {
+              city: "New York",
+              img: "/nyc.jpg",
+              days: "3 days",
+              focus: "Rooftops, parks, late‑night slices.",
+            },
+          ].map((c) => (
+            <div
+              key={c.city}
+              className="rounded-xl overflow-hidden bg-white/5 border border-white/10"
+            >
+              <div className="relative h-36">
+                <Image src={c.img} alt={c.city} fill className="object-cover" />
               </div>
-              <div className="p-4">
-                <h3 className="text-base font-semibold mb-1">{city.name}</h3>
-                <p className="text-xs text-slate-400">{city.line}</p>
+              <div className="p-4 space-y-1">
+                <p className="text-[11px] text-slate-400 uppercase tracking-[0.15em]">
+                  {c.city} • {c.days}
+                </p>
+                <p className="text-xs text-slate-300">{c.focus}</p>
               </div>
             </div>
           ))}
@@ -180,13 +230,14 @@ export default function Home() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="py-20 px-6 border-t border-white/10 bg-black">
-        <div className="max-w-3xl mx-auto text-center">
+      <section className="py-18 px-6 border-t border-white/10 bg-black">
+        <div className="max-w-3xl mx-auto py-16 text-center">
           <h2 className="text-2xl md:text-3xl font-semibold mb-4">
-            Ready to feel good about planning again?
+            Ready to close your tabs?
           </h2>
-          <p className="text-slate-400 text-sm mb-8">
-            Join the early access list and be among the first to try a calmer, more stylish way to plan your trips.
+          <p className="text-xs md:text-sm text-slate-400 mb-8 max-w-lg mx-auto">
+            Join the early access list and be among the first to try a calmer, more stylish way to
+            plan your trips — powered by AI.
           </p>
           <a
             href="/plan"

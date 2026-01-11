@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "LetsGoPlaces – Calm, Smart Travel Planning",
-  description: "A calm, stylish travel companion that crafts beautiful itineraries for the way you travel.",
+  description:
+    "A calm, stylish travel companion that crafts beautiful itineraries for the way you travel.",
 };
 
 export default function RootLayout({
@@ -15,16 +16,21 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-black text-white antialiased">
         <div className="min-h-screen flex flex-col">
-          {/* NAVBAR */}
-          <header className="w-full border-b border-white/10 bg-black/70 backdrop-blur">
+          <header className="border-b border-white/10 bg-black/70 backdrop-blur">
             <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
               <div className="text-lg font-semibold tracking-tight">
                 Lets<span className="text-blue-400">Go</span>Places
               </div>
               <div className="hidden sm:flex items-center gap-6 text-sm text-slate-300">
-                <a href="#how-it-works" className="hover:text-white">How it works</a>
-                <a href="#trip-types" className="hover:text-white">Trips</a>
-                <a href="#sample" className="hover:text-white">Sample</a>
+                <a href="#how-it-works" className="hover:text-white">
+                  How it works
+                </a>
+                <a href="#trip-types" className="hover:text-white">
+                  Trip styles
+                </a>
+                <a href="#examples" className="hover:text-white">
+                  Examples
+                </a>
                 <a
                   href="/plan"
                   className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold"
@@ -37,7 +43,6 @@ export default function RootLayout({
 
           <main className="flex-1">{children}</main>
 
-          {/* FOOTER */}
           <footer className="border-t border-white/10 bg-black/80">
             <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
               <p>© {new Date().getFullYear()} LetsGoPlaces. All rights reserved.</p>

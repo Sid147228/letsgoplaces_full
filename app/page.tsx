@@ -6,6 +6,7 @@ export default function Home() {
       {/* HERO */}
       <section className="border-b border-white/10 bg-gradient-to-b from-black via-slate-950 to-black">
         <div className="max-w-6xl mx-auto px-6 pt-16 pb-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          {/* Left: Copy + CTA */}
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-4">
               AI TRIP PLANNING, REIMAGINED
@@ -43,7 +44,7 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Right side “wizard preview” */}
+          {/* Right: Trip setup preview card */}
           <div className="w-full">
             <div className="rounded-2xl bg-white/5 border border-white/10 p-5 backdrop-blur shadow-xl text-xs space-y-4 max-w-md ml-auto">
               <div className="flex items-center justify-between mb-2">

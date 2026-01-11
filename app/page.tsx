@@ -1,37 +1,68 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function Home() {
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const data = new FormData(form);
+
+    const response = await fetch("https://formspree.io/f/mayzqzqg", {
+      method: "POST",
+      body: data,
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (response.ok) {
+      setSubmitted(true);
+      form.reset();
+    } else {
+      alert("Something went wrong. Please try again.");
+    }
+  };
+
   return (
     <main className="bg-black text-white">
       {/* Hero */}
-      <section className="min-h-screen flex flex-col items-center justify-center text-center px-4">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 fade-in">
-          AI Trip Planning, Reimagined.
-        </h1>
-        <p className="text-lg text-slate-300 max-w-xl mb-8 fade-in">
-          LetsGoPlaces is your calm, smart travel companion that builds perfect trips in seconds.
-          Paris, Tokyo, New York — and beyond.
-        </p>
-        <form
-          action="https://formspree.io/f/mayzqzqg"
-          method="POST"
-          className="flex flex-col sm:flex-row items-center gap-3 fade-in"
-        >
-          <input
-            type="email"
-            name="email"
-            required
-            placeholder="Enter your email"
-            className="px-4 py-3 rounded-full bg-white text-black w-72 placeholder:text-slate-500"
-          />
-          <button type="submit" className="btn-primary">
-            Get Early Access
-          </button>
-        </form>
+      <section
+        className="min-h-screen flex flex-col items-center justify-center text-center px-4 bg-cover bg-center relative"
+        style={{ backgroundImage: "url('/hero.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 fade-in">
+            AI Trip Planning, Reimagined.
+          </h1>
+          <p className="text-lg text-slate-300 max-w-xl mb-8 fade-in">
+            LetsGoPlaces is your calm, smart travel companion that builds perfect trips in seconds.
+            Paris, Tokyo, New York — and beyond.
+          </p>
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center gap-3 fade-in">
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="Enter your email"
+              className="px-4 py-3 rounded-full bg-white text-black w-72 placeholder:text-slate-500"
+            />
+            <button type="submit" className="btn-primary">
+              Get Early Access
+            </button>
+          </form>
+          {submitted && (
+            <p className="mt-4 text-green-400 text-sm">You're on the waitlist! ✨</p>
+          )}
+        </div>
       </section>
 
-      {/* Destinations Teaser */}
+      {/* Destinations */}
       <section className="py-20 px-4">
         <h2 className="text-3xl font-semibold text-center mb-12 fade-in">
           Dream Destinations, One Tap Away

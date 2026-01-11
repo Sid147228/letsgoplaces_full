@@ -38,7 +38,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/60" />
 
         <div className="relative z-10 max-w-2xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 fade-in">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 fade-in zoom-in">
             AI Trip Planning, Reimagined.
           </h1>
 
@@ -47,7 +47,7 @@ export default function Home() {
             Paris, Tokyo, New York — and beyond.
           </p>
 
-          {/* CENTERED FORM */}
+          {/* EARLY ACCESS FORM */}
           <form
             onSubmit={handleSubmit}
             className="flex flex-col sm:flex-row items-center justify-center gap-3 fade-in mx-auto"
@@ -64,8 +64,15 @@ export default function Home() {
             </button>
           </form>
 
-          {submitted && (
-            <p className="mt-4 text-green-400 text-sm">You're on the waitlist! ✨</p>
+          {/* TEASER OR CONFIRMATION */}
+          {submitted ? (
+            <p className="mt-4 text-green-400 text-sm zoom-in">
+              You're on the waitlist! ✨
+            </p>
+          ) : (
+            <p className="mt-6 text-slate-300 text-sm zoom-in">
+              Something exciting is coming… get on the waitlist.
+            </p>
           )}
         </div>
       </section>

@@ -1,86 +1,24 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* ----------------------------------------
-   Base styles
----------------------------------------- */
-
-html, body {
-  padding: 0;
-  margin: 0;
-  background-color: #000; /* Full black background */
-  color: #fff;            /* Default text color */
-  font-family: var(--font-sans, ui-sans-serif, system-ui);
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Remove tap highlight on mobile */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* ----------------------------------------
-   Typography
----------------------------------------- */
-
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-p {
-  line-height: 1.7;
-  color: #d1d5db; /* slate-300 */
-}
-
-/* ----------------------------------------
-   Layout helpers
----------------------------------------- */
-
-.container {
-  max-width: 1280px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-/* ----------------------------------------
-   Custom utilities
----------------------------------------- */
-
-/* Subtle fade-in animation for hero sections */
+/* Fade-in animation */
 .fade-in {
-  animation: fadeIn 1.2s ease-out forwards;
+  animation: fadeIn 0.8s ease-out forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Soft gradient overlay for hero images */
-.hero-overlay {
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.2),
-    rgba(0, 0, 0, 0.8)
-  );
+/* Fade-up for itinerary cards */
+.fade-up {
+  animation: fadeUp 0.9s ease-out forwards;
 }
 
-/* ----------------------------------------
-   Buttons
----------------------------------------- */
-
-.btn-primary {
-  @apply px-6 py-3 rounded-full bg-white text-black font-medium transition hover:bg-slate-200;
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-.btn-outline {
-  @apply px-6 py-3 rounded-full border border-white/30 text-white transition hover:bg-white hover:text-black;
+/* Parallax hero */
+.parallax {
+  background-attachment: fixed;
 }

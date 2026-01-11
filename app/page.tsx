@@ -1,136 +1,130 @@
-"use client";
-
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
 
 export default function Home() {
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const data = new FormData(form);
-
-    const response = await fetch("https://formspree.io/f/xwkzvgrj", {
-      method: "POST",
-      body: data,
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (response.ok) {
-      setSubmitted(true);
-      form.reset();
-    } else {
-      alert("Something went wrong. Please try again.");
-    }
-  };
-
   return (
-    <main className="bg-black text-white">
-      {/* HERO SECTION */}
-      <section
-        className="min-h-screen flex flex-col items-center justify-center text-center px-4 bg-cover bg-center relative"
-        style={{ backgroundImage: "url('/hero.jpg')" }}
-      >
-        <div className="absolute inset-0 bg-black/60" />
+    <main className="bg-slate-950 text-white min-h-screen">
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/hero.jpg"
+            alt="Paris"
+            fill
+            className="object-cover opacity-40"
+            priority
+          />
+        </div>
 
-        <div className="relative z-10 max-w-2xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 fade-in zoom-in">
-            AI Trip Planning, Reimagined.
+        <div className="relative z-10 max-w-5xl mx-auto px-6 py-32 text-center">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
+            Plan Your Dream Trip in Seconds
           </h1>
-
-          <p className="text-lg text-slate-300 mb-8 fade-in">
-            LetsGoPlaces is your calm, smart travel companion that builds perfect trips in seconds.
-            Paris, Tokyo, New York — and beyond.
+          <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-8">
+            A calm, smart travel companion that builds beautiful itineraries for Paris, Tokyo, New York — and beyond.
           </p>
 
-          {/* EARLY ACCESS FORM */}
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 fade-in mx-auto"
-          >
+          <form className="flex flex-col sm:flex-row gap-3 w-full max-w-md mx-auto">
             <input
               type="email"
-              name="email"
-              required
               placeholder="Enter your email"
-              className="px-4 py-3 rounded-full bg-white text-black w-72 placeholder:text-slate-500"
+              className="px-4 py-3 rounded-full bg-white text-black placeholder-slate-500 text-sm w-full"
             />
-            <button type="submit" className="btn-primary">
-              Get Early Access
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-full bg-blue-500 hover:bg-blue-600 text-white font-semibold text-sm"
+            >
+              Join Waitlist
             </button>
           </form>
 
-          {/* TEASER OR CONFIRMATION */}
-          {submitted ? (
-            <p className="mt-4 text-green-400 text-sm zoom-in">
-              You're on the waitlist! ✨
-            </p>
-          ) : (
-            <p className="mt-6 text-slate-300 text-sm zoom-in">
-              Something exciting is coming… get on the waitlist.
-            </p>
-          )}
-
-          {/* OPTIONAL: Link to planner */}
-          <Link
-            href="/plan"
-            className="mt-8 inline-block text-sm text-slate-300 underline underline-offset-4"
-          >
-            Or start planning a sample trip →
-          </Link>
+          <p className="text-sm text-slate-400 mt-4">
+            Or try a sample trip → <a href="/plan" className="underline">Start planning</a>
+          </p>
         </div>
       </section>
 
       {/* DESTINATIONS */}
-      <section className="py-20 px-4">
-        <h2 className="text-3xl font-semibold text-center mb-12 fade-in">
+      <section className="max-w-6xl mx-auto px-6 py-24">
+        <h2 className="text-3xl md:text-4xl font-semibold mb-10 text-center">
           Dream Destinations, One Tap Away
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto fade-in">
-          {["paris", "tokyo", "newyork"].map((city) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[
+            { name: "Paris", img: "/paris.jpg" },
+            { name: "Tokyo", img: "/tokyo.jpg" },
+            { name: "New York", img: "/nyc.jpg" },
+          ].map((city) => (
             <div
-              key={city}
-              className="relative rounded-xl overflow-hidden group border border-white/10"
+              key={city.name}
+              className="relative rounded-2xl overflow-hidden group cursor-pointer"
             >
               <Image
-                src={`/destinations/${city}.jpg`}
-                alt={city}
-                width={400}
+                src={city.img}
+                alt={city.name}
+                width={500}
                 height={500}
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                className="object-cover w-full h-64 group-hover:scale-105 transition-transform duration-500"
               />
-
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                <h3 className="text-xl font-semibold capitalize">{city}</h3>
+              <div className="absolute inset-0 bg-black/40 flex items-end p-4">
+                <h3 className="text-xl font-semibold">{city.name}</h3>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-white/10 py-8 px-4 text-center text-slate-400 text-sm">
-        <div className="flex justify-center items-center gap-2 mb-2">
-          <Image src="/logo.svg" alt="Logo" width={24} height={24} />
-          <span>LetsGoPlaces</span>
+      {/* HOW IT WORKS */}
+      <section className="bg-slate-900 py-24 px-6">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-semibold mb-12">
+            How LetsGoPlaces Works
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div>
+              <div className="text-4xl mb-4">🧭</div>
+              <h3 className="text-xl font-semibold mb-2">Tell Us Your Plan</h3>
+              <p className="text-slate-400">
+                Destination, dates, budget, travel style — we take care of the rest.
+              </p>
+            </div>
+
+            <div>
+              <div className="text-4xl mb-4">✨</div>
+              <h3 className="text-xl font-semibold mb-2">AI Builds Your Trip</h3>
+              <p className="text-slate-400">
+                A calm, thoughtful itinerary crafted just for you in seconds.
+              </p>
+            </div>
+
+            <div>
+              <div className="text-4xl mb-4">📍</div>
+              <h3 className="text-xl font-semibold mb-2">Explore & Enjoy</h3>
+              <p className="text-slate-400">
+                Beautiful day-by-day plans with morning, afternoon, and evening suggestions.
+              </p>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <p>© 2026. Built for explorers. Crafted by AI.</p>
+      {/* CTA */}
+      <section className="py-24 px-6 text-center">
+        <h2 className="text-3xl md:text-4xl font-semibold mb-6">
+          Ready to Plan Your Next Adventure?
+        </h2>
+        <p className="text-slate-400 max-w-xl mx-auto mb-8">
+          Join thousands of travelers discovering a calmer, smarter way to explore the world.
+        </p>
 
-        <Link
-          href="https://instagram.com/letsg0places"
-          target="_blank"
-          rel="noreferrer"
-          className="block mt-2 text-white hover:underline"
+        <a
+          href="/plan"
+          className="px-8 py-4 rounded-full bg-blue-500 hover:bg-blue-600 text-white font-semibold text-lg"
         >
-          Follow us on Instagram ↗
-        </Link>
-      </footer>
+          Start Planning
+        </a>
+      </section>
     </main>
   );
 }

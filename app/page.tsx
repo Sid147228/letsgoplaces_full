@@ -12,7 +12,7 @@ export default function Home() {
     const form = e.currentTarget;
     const data = new FormData(form);
 
-    const response = await fetch("https://formspree.io/f/mayzqzqg", {
+    const response = await fetch("https://formspree.io/f/xwkzvgrj", {
       method: "POST",
       body: data,
       headers: {
@@ -36,11 +36,11 @@ export default function Home() {
         style={{ backgroundImage: "url('/hero.jpg')" }}
       >
         <div className="absolute inset-0 bg-black/60" />
-        <div className="relative z-10">
+        <div className="relative z-10 max-w-2xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 fade-in">
             AI Trip Planning, Reimagined.
           </h1>
-          <p className="text-lg text-slate-300 max-w-xl mb-8 fade-in">
+          <p className="text-lg text-slate-300 mb-8 fade-in">
             LetsGoPlaces is your calm, smart travel companion that builds perfect trips in seconds.
             Paris, Tokyo, New York — and beyond.
           </p>

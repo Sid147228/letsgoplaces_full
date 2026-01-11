@@ -162,7 +162,7 @@ export default function GenerateTripPage() {
                   Day {day.day}
                 </span>
               </div>
-              <p className="text-slate-300 text-sm mb-4">{day.summary}</p>
+              <p className="text-slate-299 text-sm mb-4">{day.summary}</p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>

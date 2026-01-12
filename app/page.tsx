@@ -56,26 +56,31 @@ export default function Home() {
               name: "Couples",
               line: "Slow mornings, late dinners, hidden corners.",
               img: "/couples.jpg",
+              slug: "paris",
             },
             {
               name: "Family",
               line: "Memorable days without the planning chaos.",
               img: "/family.jpg",
+              slug: "newyork",
             },
             {
               name: "Solo",
               line: "Curated days, just for your pace.",
               img: "/solo.jpg",
+              slug: "tokyo",
             },
             {
               name: "Road trip",
               line: "Routes, stops, viewpoints, and coffee breaks.",
               img: "/roadtrip.jpg",
+              slug: "newyork",
             },
           ].map((t) => (
-            <div
+            <a
               key={t.name}
-              className="group rounded-xl overflow-hidden bg-white/5 border border-white/10 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+              href={`/sample/${t.slug}`}
+              className="group rounded-xl overflow-hidden bg-white/5 border border-white/10 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer block"
             >
               <div className="relative h-48 w-full">
                 <Image
@@ -91,7 +96,7 @@ export default function Home() {
                 </p>
                 <p className="text-sm text-slate-300">{t.line}</p>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </section>

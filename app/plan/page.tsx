@@ -20,7 +20,7 @@ export default function PlanPage() {
     return null;
   }
 
-  function handleSubmit(e) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const detected = detectDestination();

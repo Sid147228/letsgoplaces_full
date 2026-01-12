@@ -135,12 +135,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* EXAMPLE ITINERARIES — NOW CLICKABLE */}
+      {/* EXAMPLE ITINERARIES — Vertically stacked clickable cards */}
       <section id="examples" className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-center">
           Real trips, not generic lists
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
             {
               city: "Paris",
@@ -167,10 +168,15 @@ export default function Home() {
             <a
               key={c.city}
               href={`/sample/${c.slug}`}
-              className="rounded-xl overflow-hidden bg-white/5 border border-white/10 block hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+              className="group rounded-xl overflow-hidden bg-white/5 border border-white/10 block hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
             >
-              <div className="relative h-36">
-                <Image src={c.img} alt={c.city} fill className="object-cover" />
+              <div className="relative h-64 w-full">
+                <Image
+                  src={c.img}
+                  alt={c.city}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
               </div>
               <div className="p-4 space-y-1">
                 <p className="text-[11px] text-slate-400 uppercase tracking-[0.15em]">
@@ -181,6 +187,11 @@ export default function Home() {
             </a>
           ))}
         </div>
+
+        {/* CTA below cards */}
+        <p className="text-center text-xs text-slate-400 mt-6">
+          Click any of the above to see what a sample itinerary looks like →
+        </p>
       </section>
 
       {/* FINAL CTA */}
@@ -195,12 +206,4 @@ export default function Home() {
           </p>
           <a
             href="/plan"
-            className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white font-semibold text-sm"
-          >
-            Start a sample trip
-          </a>
-        </div>
-      </section>
-    </div>
-  );
-}
+            className="inline-flex items-center justify-center px-8 py-3 rounded

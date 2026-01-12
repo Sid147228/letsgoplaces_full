@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import LoaderCinematic from "./components/LoaderCinematic";
 import GoogleLoginModal from "./components/GoogleLoginModal";
+import TripLengthModal from "./components/TripLengthModal";
 import IconOption from "./components/IconOption";
 import { useRouter } from "next/navigation";
 
@@ -48,6 +49,7 @@ export default function PlannerMobileWizard() {
   const [notes, setNotes] = useState("");
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showTripLengthModal, setShowTripLengthModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
   function toggleVibe(v: string) {
@@ -66,20 +68,41 @@ export default function PlannerMobileWizard() {
   }
 
   function next() {
-    if (step < TOTAL_STEPS) setStep(step + 1);
-    else setShowLoginModal(true);
+    if (step < TOTAL_STEPS) {
+      setStep(step + 1);
+      return;
+    }
+
+    // Final step → build trip
+    const days = calculateDays();
+
+    if (!days) {
+      // Ask user: 3 or 5 days?
+      setShowTripLengthModal(true);
+      return;
+    }
+
+    // If dates exist → show login modal
+    setShowLoginModal(true);
   }
 
   function back() {
     if (step > 1) setStep(step - 1);
   }
 
-  function handleLoginContinue() {
-    setShowLoginModal(false);
+  function handleTripLengthSelect(days: number) {
+    setShowTripLengthModal(false);
 
-    let days = calculateDays();
-    if (!days) days = 3;
+    // After selecting 3 or 5 days → show login modal
+    setShowLoginModal(true);
 
+    // Then finalize trip
+    setTimeout(() => {
+      finalizeTrip(days);
+    }, 300);
+  }
+
+  function finalizeTrip(days: number) {
     const params = new URLSearchParams({
       destination,
       description: notes,
@@ -93,6 +116,15 @@ export default function PlannerMobileWizard() {
     setTimeout(() => {
       router.push(`/itinerary?${params.toString()}`);
     }, 1500);
+  }
+
+  function handleLoginContinue() {
+    setShowLoginModal(false);
+
+    let days = calculateDays();
+    if (!days) days = 3; // fallback safety
+
+    finalizeTrip(days);
   }
 
   return (
@@ -294,6 +326,13 @@ export default function PlannerMobileWizard() {
           {step === TOTAL_STEPS ? "Build my trip →" : "Next"}
         </button>
       </div>
+
+      {/* MODALS */}
+      <TripLengthModal
+        open={showTripLengthModal}
+        onSelect={handleTripLengthSelect}
+        onClose={() => setShowTripLengthModal(false)}
+      />
 
       <GoogleLoginModal
         open={showLoginModal}

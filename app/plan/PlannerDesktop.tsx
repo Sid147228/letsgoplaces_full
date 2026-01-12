@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import LoaderCinematic from "./components/LoaderCinematic";
 import GoogleLoginModal from "./components/GoogleLoginModal";
+import TripLengthModal from "./components/TripLengthModal";
 import TripSummary from "./components/TripSummary";
 import IconOption from "./components/IconOption";
 import SectionCard from "./components/SectionCard";
@@ -46,6 +47,7 @@ export default function PlannerDesktop() {
   const [notes, setNotes] = useState("");
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showTripLengthModal, setShowTripLengthModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
   function toggleVibe(v: string) {
@@ -64,15 +66,34 @@ export default function PlannerDesktop() {
   }
 
   function handleBuildClick() {
+    // User clicks "Build my trip"
+    // First check if dates exist
+    const days = calculateDays();
+
+    if (!days) {
+      // Ask user: 3 or 5 days?
+      setShowTripLengthModal(true);
+      return;
+    }
+
+    // If dates exist → go to login modal
     setShowLoginModal(true);
   }
 
-  function handleLoginContinue() {
-    setShowLoginModal(false);
+  function handleTripLengthSelect(days: number) {
+    // User selected 3 or 5 days
+    setShowTripLengthModal(false);
 
-    let days = calculateDays();
-    if (!days) days = 3;
+    // Now show login modal
+    setShowLoginModal(true);
 
+    // Store selected days temporarily
+    setTimeout(() => {
+      finalizeTrip(days);
+    }, 300);
+  }
+
+  function finalizeTrip(days: number) {
     const params = new URLSearchParams({
       destination,
       description: notes,
@@ -86,6 +107,18 @@ export default function PlannerDesktop() {
     setTimeout(() => {
       router.push(`/itinerary?${params.toString()}`);
     }, 1500);
+  }
+
+  function handleLoginContinue() {
+    setShowLoginModal(false);
+
+    let days = calculateDays();
+    if (!days) {
+      // Should never happen because TripLengthModal handles it
+      days = 3;
+    }
+
+    finalizeTrip(days);
   }
 
   return (
@@ -244,6 +277,13 @@ export default function PlannerDesktop() {
           </div>
         </div>
       </div>
+
+      {/* MODALS */}
+      <TripLengthModal
+        open={showTripLengthModal}
+        onSelect={handleTripLengthSelect}
+        onClose={() => setShowTripLengthModal(false)}
+      />
 
       <GoogleLoginModal
         open={showLoginModal}

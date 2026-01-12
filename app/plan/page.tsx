@@ -1,40 +1,24 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent } from "react";
+import React, { useState, useEffect } from "react";
 import NavBar from "../components/NavBar";
-
-type TripSummary = {
-  destination: string;
-  days: string;
-  style: string;
-  pace: string;
-  interests: string[];
-  tripTypes: string[];
-};
-
-type ItineraryDay = {
-  day: number;
-  title: string;
-  morning: string;
-  afternoon: string;
-  evening: string;
-};
+import { useRouter } from "next/navigation";
 
 export default function PlanPage() {
+  const router = useRouter();
+
+  // Form state
   const [description, setDescription] = useState("");
   const [destination, setDestination] = useState("");
   const [tripTypes, setTripTypes] = useState<string[]>([]);
-  const [summary, setSummary] = useState<TripSummary>({
-    destination: "",
-    days: "",
-    style: "",
-    pace: "",
-    interests: [],
-    tripTypes: [],
-  });
+  const [pace, setPace] = useState("");
+  const [interests, setInterests] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
+  // Modal + loader state
+  const [showDaysModal, setShowDaysModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [generatedItinerary, setGeneratedItinerary] = useState<ItineraryDay[] | null>(null);
 
   const allTripTypes = [
     "Adventure",
@@ -48,104 +32,55 @@ export default function PlanPage() {
     "Hidden gems",
   ];
 
-  // Destination detection
-  function detectDestination(text: string) {
-    const t = text.toLowerCase();
-    if (t.includes("paris")) return "Paris";
-    if (t.includes("tokyo")) return "Tokyo";
-    if (t.includes("new york") || t.includes("nyc")) return "New York";
-    return "";
-  }
-
-  // Live parsing logic
-  useEffect(() => {
-    const combined = (description + " " + destination).toLowerCase();
-
-    const detectedDestination = detectDestination(combined);
-
-    // Detect days (e.g., "5 days")
-    const daysMatch = combined.match(/(\d+)\s*days?/);
-    const days = daysMatch ? daysMatch[1] : "";
-
-    // Detect travel style
-    let style = "";
-    if (combined.includes("couple") || combined.includes("partner")) style = "Couple";
-    if (combined.includes("family")) style = "Family";
-    if (combined.includes("solo")) style = "Solo";
-    if (combined.includes("friends")) style = "Friends";
-
-    // Detect pace
-    let pace = "";
-    if (combined.includes("slow") || combined.includes("relaxed")) pace = "Slow & relaxed";
-    if (combined.includes("balanced")) pace = "Balanced";
-    if (combined.includes("fast") || combined.includes("packed")) pace = "Fast & packed";
-
-    // Detect interests
-    const interestKeywords = [
-      "food",
-      "design",
-      "museums",
-      "nightlife",
-      "shopping",
-      "cafes",
-      "parks",
-      "coffee",
-      "art",
-    ];
-    const interests = interestKeywords.filter((word) => combined.includes(word));
-
-    setSummary({
-      destination: detectedDestination,
-      days,
-      style,
-      pace,
-      interests,
-      tripTypes,
-    });
-  }, [description, destination, tripTypes]);
-
-  // Toggle trip type selection
+  // Toggle trip type
   function toggleTripType(type: string) {
-    setGeneratedItinerary(null); // reset when user changes filters
     setTripTypes((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
   }
 
-  // Simple inline "generator" for now (we’ll later swap with real AI)
-  function buildMockItinerary(): ItineraryDay[] {
-    const dest = summary.destination || "Your destination";
-    const daysCount = summary.days ? parseInt(summary.days, 10) || 3 : 3;
-    const baseTypes = summary.tripTypes.length > 0 ? summary.tripTypes.join(", ").toLowerCase() : "";
-    const interestText =
-      summary.interests.length > 0 ? summary.interests.join(", ").toLowerCase() : "";
+  // Calculate days if dates provided
+  function calculateDays() {
+    if (!startDate || !endDate) return null;
 
-    const result: ItineraryDay[] = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-    for (let i = 1; i <= Math.min(daysCount, 5); i++) {
-      result.push({
-        day: i,
-        title: `Day ${i} in ${dest}`,
-        morning: `Slow morning exploring a neighborhood that matches your vibe, with coffee and a light walk. Focus on ${baseTypes || interestText || "local highlights"}.`,
-        afternoon: `Afternoon spent discovering a mix of must-see spots and quieter corners. We’ll keep things ${summary.pace || "balanced"} so it never feels rushed.`,
-        evening: `Evening with a ${baseTypes || "curated"} spot for dinner and a relaxed way to end the day — think views, atmosphere, and places that feel like you.`,
-      });
-    }
-
-    return result;
+    return diff > 0 ? diff : null;
   }
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  // Handle submit
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    setLoading(true);
-    setGeneratedItinerary(null);
+    const daysFromDates = calculateDays();
 
-    // Simulate "AI thinking" for now
+    if (daysFromDates) {
+      // We have exact days → go straight to loader
+      startLoadingAndRedirect(daysFromDates);
+    } else {
+      // No dates → ask user 3 or 5 days
+      setShowDaysModal(true);
+    }
+  }
+
+  // Start loader → redirect
+  function startLoadingAndRedirect(days: number) {
+    setShowDaysModal(false);
+    setLoading(true);
+
+    const params = new URLSearchParams({
+      destination,
+      description,
+      pace,
+      days: String(days),
+      types: tripTypes.join(","),
+      interests,
+    });
+
     setTimeout(() => {
-      const mock = buildMockItinerary();
-      setGeneratedItinerary(mock);
-      setLoading(false);
+      router.push(`/itinerary?${params.toString()}`);
     }, 1500);
   }
 
@@ -153,31 +88,54 @@ export default function PlanPage() {
     <div className="bg-black min-h-screen text-white relative">
       <NavBar />
 
-      {/* Cinematic Loading Overlay */}
+      {/* Cinematic Loader */}
       {loading && (
         <div className="absolute inset-0 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center z-50">
-          <p className="text-xl font-medium mb-4">Building your trip…</p>
-          <div className="flex gap-2">
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse delay-150"></div>
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse delay-300"></div>
+          <div className="flex gap-4 mb-6 text-3xl">
+            <span className="animate-bounce">✈️</span>
+            <span className="animate-bounce delay-150">📍</span>
+            <span className="animate-bounce delay-300">📷</span>
+            <span className="animate-bounce delay-500">🌍</span>
+          </div>
+          <p className="text-xl font-medium">Crafting your itinerary…</p>
+        </div>
+      )}
+
+      {/* Days Modal */}
+      {showDaysModal && (
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/10 border border-white/20 rounded-xl p-8 text-center max-w-xs w-full">
+            <p className="text-sm text-slate-300 mb-6">
+              How long is your trip?
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => startLoadingAndRedirect(3)}
+                className="px-4 py-2 rounded-full bg-white text-black text-sm font-medium"
+              >
+                3 days (weekend)
+              </button>
+              <button
+                onClick={() => startLoadingAndRedirect(5)}
+                className="px-4 py-2 rounded-full bg-white text-black text-sm font-medium"
+              >
+                5 days (full week)
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       <div className="max-w-2xl mx-auto px-6 pt-20 pb-20">
-        {/* Header */}
         <h1 className="text-3xl md:text-4xl font-semibold mb-4">
           Plan your trip
         </h1>
         <p className="text-slate-400 text-sm md:text-base mb-12">
           Tell us what you’re dreaming of — destination, dates, vibe, pace, interests.
-          The more you share, the better your itinerary becomes.
         </p>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-10">
-          {/* Freeform Trip Description */}
+          {/* Description */}
           <div>
             <label className="block text-xs text-slate-400 mb-2">
               Describe your trip
@@ -185,15 +143,12 @@ export default function PlanPage() {
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Example: 5 days in Tokyo in April with my partner. We love food, design, quiet mornings, and exploring neighborhoods at a relaxed pace."
-              className="w-full h-40 px-4 py-3 rounded-xl bg-white text-black placeholder-slate-500 text-sm resize-none"
+              placeholder="Example: 5 days in Tokyo with my partner. We love food, design, quiet mornings…"
+              className="w-full h-40 px-4 py-3 rounded-xl bg-white text-black text-sm resize-none"
             />
-            <p className="text-[11px] text-slate-500 mt-2">
-              You can write as much or as little as you like.
-            </p>
           </div>
 
-          {/* Trip Type Selector (pills) */}
+          {/* Trip Types */}
           <div>
             <label className="block text-xs text-slate-400 mb-3">
               Trip type (optional)
@@ -219,170 +174,85 @@ export default function PlanPage() {
             </div>
           </div>
 
-          {/* Optional Structured Inputs */}
-          <div className="space-y-6">
-            {/* Destination */}
+          {/* Destination */}
+          <div>
+            <label className="block text-xs text-slate-400 mb-2">
+              Destination
+            </label>
+            <input
+              type="text"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              placeholder="Paris, Tokyo, New York…"
+              className="w-full px-4 py-3 rounded-xl bg-white text-black text-sm"
+            />
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label className="block text-xs text-slate-400 mb-2">
-                Destination (optional)
+                Start date
               </label>
               <input
-                type="text"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                placeholder="Paris, Tokyo, New York..."
-                className="w-full px-4 py-3 rounded-xl bg-white text-black placeholder-slate-500 text-sm"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-white text-black text-sm"
               />
             </div>
-
-            {/* Dates */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs text-slate-400 mb-2">
-                  Start date (optional)
-                </label>
-                <input
-                  type="date"
-                  className="w-full px-4 py-3 rounded-xl bg-white text-black text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-400 mb-2">
-                  End date (optional)
-                </label>
-                <input
-                  type="date"
-                  className="w-full px-4 py-3 rounded-xl bg-white text-black text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Travel style */}
             <div>
               <label className="block text-xs text-slate-400 mb-2">
-                Who are you traveling with? (optional)
-              </label>
-              <select className="w-full px-4 py-3 rounded-xl bg-white text-black text-sm">
-                <option value="">Select</option>
-                <option value="couple">Couple</option>
-                <option value="family">Family</option>
-                <option value="solo">Solo</option>
-                <option value="friends">Friends</option>
-              </select>
-            </div>
-
-            {/* Pace */}
-            <div>
-              <label className="block text-xs text-slate-400 mb-2">
-                Travel pace (optional)
-              </label>
-              <select className="w-full px-4 py-3 rounded-xl bg-white text-black text-sm">
-                <option value="">Select</option>
-                <option value="slow">Slow & relaxed</option>
-                <option value="balanced">Balanced</option>
-                <option value="fast">Fast & packed</option>
-              </select>
-            </div>
-
-            {/* Interests */}
-            <div>
-              <label className="block text-xs text-slate-400 mb-2">
-                Interests (optional)
+                End date
               </label>
               <input
-                type="text"
-                placeholder="Food, museums, nightlife, shopping..."
-                className="w-full px-4 py-3 rounded-xl bg-white text-black placeholder-slate-500 text-sm"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-white text-black text-sm"
               />
             </div>
           </div>
 
-          {/* Trip Summary Preview */}
-          <div className="mt-10 p-5 rounded-xl bg-white/5 border border-white/10">
-            <h3 className="text-sm font-semibold mb-3">Trip summary</h3>
+          {/* Pace */}
+          <div>
+            <label className="block text-xs text-slate-400 mb-2">
+              Travel pace
+            </label>
+            <select
+              value={pace}
+              onChange={(e) => setPace(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-white text-black text-sm"
+            >
+              <option value="">Select</option>
+              <option value="Slow">Slow & relaxed</option>
+              <option value="Balanced">Balanced</option>
+              <option value="Fast">Fast & packed</option>
+            </select>
+          </div>
 
-            <div className="space-y-2 text-xs text-slate-300">
-              <p>
-                <span className="text-slate-400">Destination:</span>{" "}
-                {summary.destination || "—"}
-              </p>
-              <p>
-                <span className="text-slate-400">Days:</span>{" "}
-                {summary.days || "—"}
-              </p>
-              <p>
-                <span className="text-slate-400">Travel style:</span>{" "}
-                {summary.style || "—"}
-              </p>
-              <p>
-                <span className="text-slate-400">Pace:</span>{" "}
-                {summary.pace || "—"}
-              </p>
-              <p>
-                <span className="text-slate-400">Trip type:</span>{" "}
-                {summary.tripTypes.length > 0
-                  ? summary.tripTypes.join(", ")
-                  : "—"}
-              </p>
-              <p>
-                <span className="text-slate-400">Interests:</span>{" "}
-                {summary.interests.length > 0
-                  ? summary.interests.join(", ")
-                  : "—"}
-              </p>
-            </div>
+          {/* Interests */}
+          <div>
+            <label className="block text-xs text-slate-400 mb-2">
+              Interests (optional)
+            </label>
+            <input
+              type="text"
+              value={interests}
+              onChange={(e) => setInterests(e.target.value)}
+              placeholder="Food, museums, nightlife, shopping…"
+              className="w-full px-4 py-3 rounded-xl bg-white text-black text-sm"
+            />
           </div>
 
           {/* CTA */}
           <button
             type="submit"
-            className="w-full mt-4 px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white font-semibold text-sm"
+            className="w-full mt-4 px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold text-sm"
           >
             Build my trip →
           </button>
-
-          <p className="text-center text-xs text-slate-500 mt-4">
-            For now, this generates a sample itinerary on this page.
-          </p>
         </form>
-
-        {/* Generated Itinerary Section */}
-        {generatedItinerary && (
-          <section className="mt-16 border-t border-white/10 pt-10">
-            <h2 className="text-xl md:text-2xl font-semibold mb-4">
-              Your sample itinerary
-            </h2>
-            <p className="text-xs text-slate-400 mb-6">
-              This is a simple preview. Later, this will be powered by a full AI engine with maps,
-              restaurants, and more.
-            </p>
-
-            <div className="space-y-6">
-              {generatedItinerary.map((day) => (
-                <div
-                  key={day.day}
-                  className="rounded-xl bg-white/5 border border-white/10 p-4 text-xs space-y-3"
-                >
-                  <p className="text-[11px] uppercase tracking-[0.15em] text-slate-400">
-                    Day {day.day}
-                  </p>
-                  <p className="text-sm font-medium text-white">{day.title}</p>
-                  <div className="space-y-2 text-slate-300">
-                    <p>
-                      <span className="text-slate-400">Morning:</span> {day.morning}
-                    </p>
-                    <p>
-                      <span className="text-slate-400">Afternoon:</span> {day.afternoon}
-                    </p>
-                    <p>
-                      <span className="text-slate-400">Evening:</span> {day.evening}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
       </div>
     </div>
   );

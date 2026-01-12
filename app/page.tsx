@@ -95,6 +95,103 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* HOW IT WORKS */}
+      <section
+        id="how-it-works"
+        className="bg-gradient-to-b from-black via-slate-950 to-black py-18 px-6 border-y border-white/10"
+      >
+        <div className="max-w-5xl mx-auto py-16">
+          <h2 className="text-2xl md:text-3xl font-semibold mb-10 text-center">
+            A calmer way to plan
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-sm">
+            {[
+              {
+                title: "Tell us your plan",
+                desc: "Destination, dates, budget, vibe. Just the essentials — we handle the structure.",
+              },
+              {
+                title: "AI builds your trip",
+                desc: "Thoughtful, day‑by‑day itineraries with mornings, afternoons, and evenings that match your style.",
+              },
+              {
+                title: "Tweak, save, go",
+                desc: "Adjust what you like, save favorites, and head out with clarity instead of chaos.",
+              },
+            ].map((s, i) => (
+              <div key={s.title}>
+                <p className="text-xs text-slate-500 mb-2">Step 0{i + 1}</p>
+                <h3 className="text-base font-semibold mb-2">{s.title}</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* EXAMPLE ITINERARIES */}
+      <section id="examples" className="max-w-6xl mx-auto px-6 py-16">
+        <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-center">
+          Real trips, not generic lists
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+          {[
+            {
+              city: "Paris",
+              img: "/paris.jpg",
+              days: "4 days",
+              focus: "Art, cafés, golden hour walks.",
+            },
+            {
+              city: "Tokyo",
+              img: "/tokyo.jpg",
+              days: "5 days",
+              focus: "Food, neighborhoods, neon nights.",
+            },
+            {
+              city: "New York",
+              img: "/nyc.jpg",
+              days: "3 days",
+              focus: "Rooftops, parks, late‑night slices.",
+            },
+          ].map((c) => (
+            <div
+              key={c.city}
+              className="rounded-xl overflow-hidden bg-white/5 border border-white/10"
+            >
+              <div className="relative h-36">
+                <Image src={c.img} alt={c.city} fill className="object-cover" />
+              </div>
+              <div className="p-4 space-y-1">
+                <p className="text-[11px] text-slate-400 uppercase tracking-[0.15em]">
+                  {c.city} • {c.days}
+                </p>
+                <p className="text-xs text-slate-300">{c.focus}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="py-18 px-6 border-t border-white/10 bg-black">
+        <div className="max-w-3xl mx-auto py-16 text-center">
+          <h2 className="text-2xl md:text-3xl font-semibold mb-4">
+            Ready to close your tabs?
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 mb-8 max-w-lg mx-auto">
+            Join the early access list and be among the first to try a calmer, more stylish way to
+            plan your trips — powered by AI.
+          </p>
+          <a
+            href="/plan"
+            className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white font-semibold text-sm"
+          >
+            Start a sample trip
+          </a>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,6 +1,18 @@
 import Image from "next/image";
 
-export default function ActivityCard({ time, title, desc, img }) {
+interface ActivityCardProps {
+  time: string;
+  title: string;
+  desc: string;
+  img: string;
+}
+
+export default function ActivityCard({
+  time,
+  title,
+  desc,
+  img,
+}: ActivityCardProps) {
   return (
     <div className="flex gap-4 items-start">
       <div className="w-24 h-24 relative rounded-xl overflow-hidden border border-white/10">

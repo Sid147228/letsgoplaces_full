@@ -1,4 +1,16 @@
-export default function ItineraryDay({ day, morning, afternoon, evening }) {
+interface ItineraryDayProps {
+  day: number;
+  morning: string;
+  afternoon: string;
+  evening: string;
+}
+
+export default function ItineraryDay({
+  day,
+  morning,
+  afternoon,
+  evening,
+}: ItineraryDayProps) {
   return (
     <div className="p-4 rounded-xl bg-white/5 border border-white/10">
       <p className="text-xs text-slate-400 uppercase mb-2">Day {day}</p>

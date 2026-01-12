@@ -2,9 +2,12 @@ import { sampleTrips } from "@/data/sampleTrips";
 import ItineraryDay from "@/components/ItineraryDay";
 import Image from "next/image";
 
+// Infer the valid keys from sampleTrips
+type TripKey = keyof typeof sampleTrips;
+
 interface SampleTripPageProps {
   params: {
-    city: string;
+    city: TripKey;
   };
 }
 

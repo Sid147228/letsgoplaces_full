@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useSearchParams } from "next/navigation";
 import ItineraryHeader from "./components/ItineraryHeader";
 import DayTabs from "./components/DayTabs";

@@ -6,6 +6,16 @@ import GoogleLoginModal from "./components/GoogleLoginModal";
 import IconOption from "./components/IconOption";
 import { useRouter } from "next/navigation";
 
+import {
+  MapPinIcon,
+  CalendarIcon,
+  UserGroupIcon,
+  SparklesIcon,
+  BoltIcon,
+  BanknotesIcon,
+  PencilSquareIcon,
+} from "@heroicons/react/24/outline";
+
 const GROUP_OPTIONS = ["Solo", "Couple", "Family", "Friends", "Business"];
 const VIBE_OPTIONS = [
   "Food",
@@ -68,9 +78,7 @@ export default function PlannerMobileWizard() {
     setShowLoginModal(false);
 
     let days = calculateDays();
-    if (!days) {
-      days = 3; // same fallback for now
-    }
+    if (!days) days = 3;
 
     const params = new URLSearchParams({
       destination,
@@ -107,7 +115,10 @@ export default function PlannerMobileWizard() {
       {/* steps */}
       {step === 1 && (
         <div className="space-y-3">
-          <h1 className="text-xl font-semibold">Where are you going?</h1>
+          <div className="flex items-center gap-2">
+            <MapPinIcon className="w-5 h-5 text-white/80" />
+            <h1 className="text-xl font-semibold">Where do you want to go?</h1>
+          </div>
           <p className="text-xs text-slate-400 mb-3">
             Pick a city or region. You can change it later.
           </p>
@@ -123,9 +134,14 @@ export default function PlannerMobileWizard() {
 
       {step === 2 && (
         <div className="space-y-3">
-          <h1 className="text-xl font-semibold">When are you going?</h1>
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="w-5 h-5 text-white/80" />
+            <h1 className="text-xl font-semibold">
+              When are you planning to travel?
+            </h1>
+          </div>
           <p className="text-xs text-slate-400 mb-3">
-            You can skip this if you’re not sure yet.
+            You can skip this if you're not sure yet.
           </p>
           <div className="space-y-4">
             <div>
@@ -152,9 +168,14 @@ export default function PlannerMobileWizard() {
 
       {step === 3 && (
         <div className="space-y-3">
-          <h1 className="text-xl font-semibold">Who are you travelling with?</h1>
+          <div className="flex items-center gap-2">
+            <UserGroupIcon className="w-5 h-5 text-white/80" />
+            <h1 className="text-xl font-semibold">
+              Who are you traveling with?
+            </h1>
+          </div>
           <p className="text-xs text-slate-400 mb-3">
-            We’ll shape the mood of your trip around this.
+            We'll shape the mood of your trip around this.
           </p>
           <div className="flex flex-wrap gap-2">
             {GROUP_OPTIONS.map((g) => (
@@ -171,7 +192,12 @@ export default function PlannerMobileWizard() {
 
       {step === 4 && (
         <div className="space-y-3">
-          <h1 className="text-xl font-semibold">What’s the vibe?</h1>
+          <div className="flex items-center gap-2">
+            <SparklesIcon className="w-5 h-5 text-white/80" />
+            <h1 className="text-xl font-semibold">
+              What type of trip are you looking for?
+            </h1>
+          </div>
           <p className="text-xs text-slate-400 mb-3">
             Pick a few that feel like you.
           </p>
@@ -190,9 +216,10 @@ export default function PlannerMobileWizard() {
 
       {step === 5 && (
         <div className="space-y-3">
-          <h1 className="text-xl font-semibold">
-            How fast do you like to travel?
-          </h1>
+          <div className="flex items-center gap-2">
+            <BoltIcon className="w-5 h-5 text-white/80" />
+            <h1 className="text-xl font-semibold">What pace do you prefer?</h1>
+          </div>
           <p className="text-xs text-slate-400 mb-3">
             Slow and relaxed, or packed and energetic?
           </p>
@@ -211,9 +238,12 @@ export default function PlannerMobileWizard() {
 
       {step === 6 && (
         <div className="space-y-3">
-          <h1 className="text-xl font-semibold">Rough budget</h1>
+          <div className="flex items-center gap-2">
+            <BanknotesIcon className="w-5 h-5 text-white/80" />
+            <h1 className="text-xl font-semibold">What's your budget?</h1>
+          </div>
           <p className="text-xs text-slate-400 mb-3">
-            Just a sense of how you’d like to spend.
+            Just a sense of how you'd like to spend.
           </p>
           <div className="flex flex-wrap gap-2">
             {BUDGET_OPTIONS.map((b) => (
@@ -230,9 +260,12 @@ export default function PlannerMobileWizard() {
 
       {step === 7 && (
         <div className="space-y-3">
-          <h1 className="text-xl font-semibold">
-            Anything else we should know?
-          </h1>
+          <div className="flex items-center gap-2">
+            <PencilSquareIcon className="w-5 h-5 text-white/80" />
+            <h1 className="text-xl font-semibold">
+              Any preferences or special notes?
+            </h1>
+          </div>
           <p className="text-xs text-slate-400 mb-3">
             Design, coffee, rooftop bars, hidden gems…
           </p>

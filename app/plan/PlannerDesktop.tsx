@@ -8,6 +8,16 @@ import IconOption from "./components/IconOption";
 import SectionCard from "./components/SectionCard";
 import { useRouter } from "next/navigation";
 
+import {
+  MapPinIcon,
+  CalendarIcon,
+  UserGroupIcon,
+  SparklesIcon,
+  BoltIcon,
+  BanknotesIcon,
+  PencilSquareIcon,
+} from "@heroicons/react/24/outline";
+
 const GROUP_OPTIONS = ["Solo", "Couple", "Family", "Friends", "Business"];
 const VIBE_OPTIONS = [
   "Food",
@@ -54,7 +64,6 @@ export default function PlannerDesktop() {
   }
 
   function handleBuildClick() {
-    // For now, always show login modal first (mock auth gate)
     setShowLoginModal(true);
   }
 
@@ -62,10 +71,7 @@ export default function PlannerDesktop() {
     setShowLoginModal(false);
 
     let days = calculateDays();
-    if (!days) {
-      // fallback: default to 3 days, you can plug in the 3/5 day modal later
-      days = 3;
-    }
+    if (!days) days = 3;
 
     const params = new URLSearchParams({
       destination,
@@ -73,7 +79,7 @@ export default function PlannerDesktop() {
       pace,
       days: String(days),
       types: vibes.join(","),
-      interests: group, // reusing "group" here for now
+      interests: group,
     });
 
     setLoading(true);
@@ -92,7 +98,11 @@ export default function PlannerDesktop() {
       <div className="relative max-w-6xl mx-auto px-6 pb-20 flex gap-8">
         {/* Left column */}
         <div className="flex-1 space-y-6 mt-6">
-          <SectionCard title="Where are you going?" subtitle="Pick a city or region.">
+          <SectionCard
+            title="Where do you want to go?"
+            subtitle="Pick a city or region."
+            icon={<MapPinIcon className="w-5 h-5" />}
+          >
             <input
               type="text"
               value={destination}
@@ -103,8 +113,9 @@ export default function PlannerDesktop() {
           </SectionCard>
 
           <SectionCard
-            title="When are you going?"
-            subtitle="You can skip this if you’re not sure yet."
+            title="When are you planning to travel?"
+            subtitle="You can skip this if you're not sure yet."
+            icon={<CalendarIcon className="w-5 h-5" />}
           >
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -129,8 +140,9 @@ export default function PlannerDesktop() {
           </SectionCard>
 
           <SectionCard
-            title="Who are you travelling with?"
-            subtitle="We’ll shape the mood of your trip around this."
+            title="Who are you traveling with?"
+            subtitle="We'll shape the mood of your trip around this."
+            icon={<UserGroupIcon className="w-5 h-5" />}
           >
             <div className="flex flex-wrap gap-2">
               {GROUP_OPTIONS.map((g) => (
@@ -145,8 +157,9 @@ export default function PlannerDesktop() {
           </SectionCard>
 
           <SectionCard
-            title="What’s the vibe?"
+            title="What type of trip are you looking for?"
             subtitle="Pick a few that feel like you."
+            icon={<SparklesIcon className="w-5 h-5" />}
           >
             <div className="flex flex-wrap gap-2">
               {VIBE_OPTIONS.map((v) => (
@@ -161,8 +174,9 @@ export default function PlannerDesktop() {
           </SectionCard>
 
           <SectionCard
-            title="How fast do you like to travel?"
+            title="What pace do you prefer?"
             subtitle="Slow and relaxed, or packed and energetic?"
+            icon={<BoltIcon className="w-5 h-5" />}
           >
             <div className="flex flex-wrap gap-2">
               {PACE_OPTIONS.map((p) => (
@@ -177,8 +191,9 @@ export default function PlannerDesktop() {
           </SectionCard>
 
           <SectionCard
-            title="Rough budget"
-            subtitle="Just a sense of how you’d like to spend."
+            title="What's your budget?"
+            subtitle="Just a sense of how you'd like to spend."
+            icon={<BanknotesIcon className="w-5 h-5" />}
           >
             <div className="flex flex-wrap gap-2">
               {BUDGET_OPTIONS.map((b) => (
@@ -193,8 +208,9 @@ export default function PlannerDesktop() {
           </SectionCard>
 
           <SectionCard
-            title="Anything else we should know?"
+            title="Any preferences or special notes?"
             subtitle="Design, coffee, rooftop bars, hidden gems…"
+            icon={<PencilSquareIcon className="w-5 h-5" />}
           >
             <textarea
               value={notes}

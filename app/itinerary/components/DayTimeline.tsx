@@ -1,6 +1,21 @@
 import ActivityCard from "./ActivityCard";
 
-export default function DayTimeline({ data }) {
+interface ActivityBlock {
+  title: string;
+  desc: string;
+  img: string;
+}
+
+interface DayTimelineProps {
+  data: {
+    day: number;
+    morning: ActivityBlock;
+    afternoon: ActivityBlock;
+    evening: ActivityBlock;
+  };
+}
+
+export default function DayTimeline({ data }: DayTimelineProps) {
   return (
     <div className="space-y-10">
       <ActivityCard

@@ -1,4 +1,12 @@
-export default function ItineraryHeader({ destination, days }) {
+interface ItineraryHeaderProps {
+  destination: string;
+  days: number;
+}
+
+export default function ItineraryHeader({
+  destination,
+  days,
+}: ItineraryHeaderProps) {
   return (
     <div className="w-full h-64 bg-gradient-to-b from-black via-slate-900 to-black flex items-end pb-10 px-6 text-center">
       <div className="mx-auto">

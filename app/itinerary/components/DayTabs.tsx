@@ -1,4 +1,10 @@
-export default function DayTabs({ days, activeDay, onChange }) {
+interface DayTabsProps {
+  days: number;
+  activeDay: number;
+  onChange: (day: number) => void;
+}
+
+export default function DayTabs({ days, activeDay, onChange }: DayTabsProps) {
   return (
     <div className="flex gap-3 overflow-x-auto py-4 mb-6 no-scrollbar">
       {Array.from({ length: days }).map((_, i) => {

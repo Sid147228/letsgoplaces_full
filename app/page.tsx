@@ -135,7 +135,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* EXAMPLE ITINERARIES */}
+      {/* EXAMPLE ITINERARIES — NOW CLICKABLE */}
       <section id="examples" className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-center">
           Real trips, not generic lists
@@ -147,23 +147,27 @@ export default function Home() {
               img: "/paris.jpg",
               days: "4 days",
               focus: "Art, cafés, golden hour walks.",
+              slug: "paris",
             },
             {
               city: "Tokyo",
               img: "/tokyo.jpg",
               days: "5 days",
               focus: "Food, neighborhoods, neon nights.",
+              slug: "tokyo",
             },
             {
               city: "New York",
               img: "/nyc.jpg",
               days: "3 days",
               focus: "Rooftops, parks, late‑night slices.",
+              slug: "newyork",
             },
           ].map((c) => (
-            <div
+            <a
               key={c.city}
-              className="rounded-xl overflow-hidden bg-white/5 border border-white/10"
+              href={`/sample/${c.slug}`}
+              className="rounded-xl overflow-hidden bg-white/5 border border-white/10 block hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
             >
               <div className="relative h-36">
                 <Image src={c.img} alt={c.city} fill className="object-cover" />
@@ -174,7 +178,7 @@ export default function Home() {
                 </p>
                 <p className="text-xs text-slate-300">{c.focus}</p>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </section>

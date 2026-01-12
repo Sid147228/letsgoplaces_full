@@ -2,7 +2,13 @@ import { sampleTrips } from "@/data/sampleTrips";
 import ItineraryDay from "@/components/ItineraryDay";
 import Image from "next/image";
 
-export default function SampleTripPage({ params }) {
+interface SampleTripPageProps {
+  params: {
+    city: string;
+  };
+}
+
+export default function SampleTripPage({ params }: SampleTripPageProps) {
   const trip = sampleTrips[params.city];
 
   if (!trip) {

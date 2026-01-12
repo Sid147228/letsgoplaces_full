@@ -17,8 +17,8 @@ export default function Home() {
             , calmer than spreadsheets.
           </h1>
           <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
-            LetsGoPlaces is your calm, stylish travel companion that quietly builds
-            beautiful itineraries for Paris, Tokyo, New York — and beyond.
+            LetsGoPlaces is your calm, stylish travel companion that quietly
+            builds beautiful itineraries for Paris, Tokyo, New York — and beyond.
           </p>
 
           <form className="flex flex-col sm:flex-row gap-3 w-full max-w-md mx-auto mb-4">
@@ -128,7 +128,9 @@ export default function Home() {
               <div key={s.title}>
                 <p className="text-xs text-slate-500 mb-2">Step 0{i + 1}</p>
                 <h3 className="text-base font-semibold mb-2">{s.title}</h3>
-                <p className="text-xs text-slate-300 leading-relaxed">{s.desc}</p>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {s.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -201,9 +203,17 @@ export default function Home() {
             Ready to close your tabs?
           </h2>
           <p className="text-xs md:text-sm text-slate-400 mb-8 max-w-lg mx-auto">
-            Join the early access list and be among the first to try a calmer, more stylish way to
-            plan your trips — powered by AI.
+            Join the early access list and be among the first to try a calmer,
+            more stylish way to plan your trips — powered by AI.
           </p>
           <a
             href="/plan"
-            className="inline-flex items-center justify-center px-8 py-3 rounded
+            className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white font-semibold text-sm"
+          >
+            Start a sample trip
+          </a>
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -6,43 +6,32 @@ export default function Home() {
     <div className="bg-black text-white">
       <NavBar />
 
-      {/* HERO */}
-      <section className="border-b border-white/10 bg-gradient-to-b from-black via-slate-950 to-black">
-        <div className="max-w-6xl mx-auto px-6 pt-20 pb-28 text-center">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-4">
+      {/* HERO — replaced with full background image */}
+      <section
+        className="relative w-full h-[90vh] bg-cover bg-center bg-no-repeat flex items-center justify-center border-b border-white/10"
+        style={{ backgroundImage: "url('/HERO.jpg')" }}
+      >
+        {/* Cinematic overlay */}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+
+        {/* Text content */}
+        <div className="relative z-10 text-center px-6 max-w-3xl">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-300 mb-4">
             AI TRIP PLANNING, REIMAGINED
           </p>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 leading-tight">
             Smarter than{" "}
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               endless tabs
             </span>
             , calmer than spreadsheets.
           </h1>
-          <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
-            LetsGoPlaces is your calm, stylish travel companion that quietly builds
-            beautiful itineraries for Paris, Tokyo, New York — and beyond.
-          </p>
 
-          <form className="flex flex-col sm:flex-row gap-3 w-full max-w-md mx-auto mb-4">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="px-4 py-3 rounded-full bg-white text-black placeholder-slate-500 text-sm w-full"
-            />
-            <button
-              type="submit"
-              className="px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white font-semibold text-sm"
-            >
-              Join waitlist
-            </button>
-          </form>
-
-          <p className="text-sm text-slate-400">
-            No spam, just early access. Or{" "}
-            <a href="/plan" className="underline">
-              try a sample trip →
-            </a>
+          <p className="text-lg md:text-xl text-slate-200 max-w-2xl mx-auto leading-relaxed">
+            LetsGoPlaces is your calm, stylish travel companion that quietly
+            builds beautiful itineraries for Paris, Tokyo, New York — and
+            beyond.
           </p>
         </div>
       </section>
@@ -131,14 +120,16 @@ export default function Home() {
               <div key={s.title}>
                 <p className="text-xs text-slate-500 mb-2">Step 0{i + 1}</p>
                 <h3 className="text-base font-semibold mb-2">{s.title}</h3>
-                <p className="text-xs text-slate-300 leading-relaxed">{s.desc}</p>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {s.desc}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* EXAMPLE ITINERARIES — Vertically stacked clickable cards */}
+      {/* EXAMPLE ITINERARIES */}
       <section id="examples" className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-center">
           Real trips, not generic lists
@@ -191,7 +182,6 @@ export default function Home() {
           ))}
         </div>
 
-        {/* CTA below cards */}
         <p className="text-center text-xs text-slate-400 mt-6">
           Click any of the above to see what a sample itinerary looks like →
         </p>
@@ -207,8 +197,8 @@ export default function Home() {
             Ready to close your tabs?
           </h2>
           <p className="text-xs md:text-sm text-slate-400 mb-8 max-w-lg mx-auto">
-            Join the early access list and be among the first to try a calmer, more stylish way to
-            plan your trips — powered by AI.
+            Join the early access list and be among the first to try a calmer,
+            more stylish way to plan your trips — powered by AI.
           </p>
           <a
             href="/plan"

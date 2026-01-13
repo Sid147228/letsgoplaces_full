@@ -5,7 +5,7 @@ import ItineraryHeader from "./components/ItineraryHeader";
 import DayTabs from "./components/DayTabs";
 import DayTimeline from "./components/DayTimeline";
 import ItineraryActions from "./components/ItineraryActions";
-import SaveTripButton from "@/components/SaveTripButton";
+import SaveTripButton from "../components/SaveTripButton";
 import { useState } from "react";
 
 export default function ItineraryPage() {

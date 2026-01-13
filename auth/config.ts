@@ -1,12 +1,13 @@
-import GoogleProvider from "next-auth/providers/google";
+import Google from "next-auth/providers/google";
 
-export const authConfig = {
+export default {
   providers: [
-    GoogleProvider({
+    Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+
   callbacks: {
     async session({ session, token }) {
       if (session?.user) {

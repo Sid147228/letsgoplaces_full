@@ -1,19 +1,21 @@
-import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 
-export default {
+const authConfig = {
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+
   callbacks: {
     async session({ session, token }) {
-      if (session.user && token.sub) {
-        (session.user as any).id = token.sub;
+      if (session?.user) {
+        session.user.id = token.sub;
       }
       return session;
     },
   },
-} satisfies NextAuthConfig;
+};
+
+export default authConfig;

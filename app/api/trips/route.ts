@@ -1,36 +1,34 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import authConfig from "@/auth.config";
-import { PrismaClient } from "@prisma/client";
+import { authConfig } from "../auth/[...nextauth]/route";
+import { Session } from "next-auth";
+import prisma from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+export async function GET() {
+  // Explicitly type the session to avoid TS inferring `{}`.
+  const session = (await getServerSession(authConfig)) as Session | null;
 
-export async function GET(req: Request) {
-  const session = await getServerSession(authConfig);
-
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  if (!session || !session.user?.email) {
+    return NextResponse.json(
+      { error: "Not authenticated" },
+      { status: 401 }
+    );
   }
 
-  const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id");
+  const userEmail = session.user.email;
 
-  if (!id) {
-    return NextResponse.json({ error: "Missing trip ID" }, { status: 400 });
+  try {
+    const trips = await prisma.trip.findMany({
+      where: { userEmail },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json({ trips });
+  } catch (error) {
+    console.error("Error fetching trips:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch trips" },
+      { status: 500 }
+    );
   }
-
-  const trip = await prisma.trip.findUnique({
-    where: { id },
-  });
-
-  if (!trip) {
-    return NextResponse.json({ trip: null }, { status: 404 });
-  }
-
-  // Ensure the trip belongs to the logged‑in user
-  if (trip.userId !== session.user.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-  }
-
-  return NextResponse.json({ trip });
 }

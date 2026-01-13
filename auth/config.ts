@@ -1,6 +1,6 @@
 import Google from "next-auth/providers/google";
 
-export default {
+const authConfig = {
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -17,3 +17,5 @@ export default {
     },
   },
 };
+
+export default authConfig;

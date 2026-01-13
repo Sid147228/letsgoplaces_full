@@ -5,6 +5,7 @@ import ItineraryHeader from "./components/ItineraryHeader";
 import DayTabs from "./components/DayTabs";
 import DayTimeline from "./components/DayTimeline";
 import ItineraryActions from "./components/ItineraryActions";
+import SaveTripButton from "@/components/SaveTripButton";
 import { useState } from "react";
 
 export default function ItineraryPage() {
@@ -35,12 +36,28 @@ export default function ItineraryPage() {
     },
   }));
 
+  // Trip object to save
+  const generatedTrip = {
+    destination,
+    days,
+    pace: "",
+    vibes: "",
+    groupType: "",
+    notes: "",
+    itineraryJson: itinerary,
+  };
+
   return (
     <div className="bg-black text-white min-h-screen pb-20">
       <ItineraryHeader destination={destination} days={days} />
 
       <div className="max-w-5xl mx-auto px-6">
-        <ItineraryActions />
+
+        {/* Action bar with Save Trip button */}
+        <div className="flex items-center justify-between mb-6">
+          <ItineraryActions />
+          <SaveTripButton trip={generatedTrip} />
+        </div>
 
         <DayTabs
           days={days}

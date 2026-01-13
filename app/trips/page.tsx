@@ -2,35 +2,46 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSession, signIn } from "next-auth/react";
 
-type TripSummary = {
+type Trip = {
   id: string;
   destination: string;
-  startDate: string;
-  endDate: string;
+  days: number;
+  createdAt: string;
 };
 
 export default function TripsPage() {
-  const [trips, setTrips] = useState<TripSummary[]>([]);
+  const { data: session, status } = useSession();
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const keys = Object.keys(localStorage).filter((k) => k.startsWith("trip-"));
-    const list = keys.map((key) => {
-      const t = JSON.parse(localStorage.getItem(key) || "{}");
-      return {
-        id: t.id,
-        destination: t.destination,
-        startDate: t.startDate,
-        endDate: t.endDate,
-      };
-    });
-    setTrips(list);
-  }, []);
+    if (status === "loading") return;
 
-  const deleteTrip = (id: string) => {
-    localStorage.removeItem(`trip-${id}`);
-    setTrips((prev) => prev.filter((t) => t.id !== id));
-  };
+    // If user is not logged in → trigger Google login
+    if (!session) {
+      signIn("google");
+      return;
+    }
+
+    async function fetchTrips() {
+      const res = await fetch("/api/trips/list");
+      const data = await res.json();
+      setTrips(data.trips || []);
+      setLoading(false);
+    }
+
+    fetchTrips();
+  }, [session, status]);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-black text-white px-6 py-10">
+        <p className="text-slate-400">Loading your trips…</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-black text-white px-6 py-10">
@@ -47,23 +58,19 @@ export default function TripsPage() {
             className="border border-white/10 bg-white/5 p-6 rounded-xl fade-up"
           >
             <h2 className="text-xl font-semibold mb-1">{trip.destination}</h2>
+
             <p className="text-slate-400 text-sm mb-4">
-              {trip.startDate} → {trip.endDate}
+              {trip.days} days • Saved on{" "}
+              {new Date(trip.createdAt).toLocaleDateString()}
             </p>
 
             <div className="flex gap-3">
               <Link
-                href={`/trip/${trip.id}?id=${trip.id}`}
+                href={`/trips/${trip.id}`}
                 className="px-4 py-2 rounded-full bg-white text-black text-sm font-semibold"
               >
-                View Trip
+                View →
               </Link>
-              <button
-                onClick={() => deleteTrip(trip.id)}
-                className="px-4 py-2 rounded-full border border-white/20 text-sm"
-              >
-                Delete
-              </button>
             </div>
           </div>
         ))}

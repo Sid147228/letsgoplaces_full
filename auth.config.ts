@@ -1,4 +1,6 @@
 import Google from "next-auth/providers/google";
+import type { Session, User } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 
 const authConfig = {
   providers: [
@@ -9,7 +11,13 @@ const authConfig = {
   ],
 
   callbacks: {
-    async session({ session, token }) {
+    async session({
+      session,
+      token,
+    }: {
+      session: Session;
+      token: JWT;
+    }) {
       if (session?.user) {
         session.user.id = token.sub;
       }

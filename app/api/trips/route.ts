@@ -5,7 +5,6 @@ import { Session } from "next-auth";
 import prisma from "@/lib/prisma";
 
 export async function GET() {
-  // Explicitly type the session to avoid TS inferring `{}`.
   const session = (await getServerSession(authConfig)) as Session | null;
 
   if (!session || !session.user?.email) {
@@ -15,11 +14,24 @@ export async function GET() {
     );
   }
 
-  const userEmail = session.user.email;
+  const email = session.user.email;
 
   try {
+    // 1. Find the user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // 2. Fetch trips using user.id (NOT email)
     const trips = await prisma.trip.findMany({
-      where: { userEmail },
+      where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
 

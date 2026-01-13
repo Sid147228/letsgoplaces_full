@@ -1,8 +1,5 @@
 import NextAuth from "next-auth";
-import authConfig from "@/auth.config";
-
-// Export authConfig so other API routes (like /api/trips) can import it
-export { authConfig };
+import { authConfig } from "@/auth/config";
 
 const handler = NextAuth(authConfig);
 

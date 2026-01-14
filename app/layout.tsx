@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import SessionProvider from "@/components/SessionProvider"; // ✅ Add this
+import SessionProvider from "@/components/SessionProvider";
+import AuthBar from "@/components/AuthBar"; // ✅ Add this
 
 export const metadata: Metadata = {
   title: "LetsGoPlaces – Calm, Smart Travel Planning",
@@ -16,7 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-black text-white antialiased">
-        <SessionProvider> {/* ✅ Wrap everything */}
+        <SessionProvider>
+          {/* ✅ Add visible login/logout bar */}
+          <AuthBar />
+
           <div className="min-h-screen flex flex-col">
             {/* NAVBAR */}
             <header className="border-b border-white/10 bg-black/80 backdrop-blur">

@@ -1,9 +1,7 @@
 import Google from "next-auth/providers/google";
-import type { Session } from "next-auth";
-import type { JWT } from "next-auth/jwt";
 
 const authConfig = {
-  secret: process.env.NEXTAUTH_SECRET, // ✅ Add this line
+  secret: process.env.NEXTAUTH_SECRET,
 
   providers: [
     Google({
@@ -13,7 +11,7 @@ const authConfig = {
   ],
 
   callbacks: {
-    async session({ session, token }: { session: Session; token: JWT }) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub;
       }

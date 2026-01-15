@@ -1,132 +1,69 @@
-"use client";
+import { auth } from "@/auth.config";
+import prisma from "@/lib/prisma";
+import { notFound } from "next/navigation";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { useSession, signIn } from "next-auth/react";
+export default async function TripDetailPage({ params }: { params: { id: string } }) {
+  const session = await auth();
 
-type Trip = {
-  id: string;
-  destination: string;
-  days: number;
-  pace: string;
-  vibes: string;
-  groupType: string;
-  notes: string;
-  itineraryJson: any[];
-  createdAt: string;
-};
-
-export default function TripPage() {
-  const { id } = useParams();
-  const router = useRouter();
-  const { data: session, status } = useSession();
-
-  const [trip, setTrip] = useState<Trip | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch trip from DB
-  useEffect(() => {
-    if (!id) return;
-
-    if (status === "loading") return;
-
-    if (!session) {
-      signIn("google");
-      return;
-    }
-
-    async function fetchTrip() {
-      const res = await fetch(`/api/trips/get?id=${id}`);
-      const data = await res.json();
-
-      if (!data.trip) {
-        router.push("/trips");
-        return;
-      }
-
-      setTrip(data.trip);
-      setLoading(false);
-    }
-
-    fetchTrip();
-  }, [id, session, status, router]);
-
-  if (loading || !trip) {
+  if (!session || !session.user?.email) {
     return (
-      <main className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-slate-400">Loading your trip…</p>
-      </main>
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-semibold">You must be logged in to view this trip.</h2>
+      </div>
+    );
+  }
+
+  const trip = await prisma.trip.findUnique({
+    where: { id: params.id },
+  });
+
+  if (!trip) {
+    return notFound();
+  }
+
+  if (trip.userEmail !== session.user.email) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-semibold">You do not have access to this trip.</h2>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      {/* NAVIGATION */}
-      <nav className="w-full border-b border-white/10 bg-black/40 backdrop-blur-md px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="text-xl font-semibold">
-          LetsGoPlaces
-        </Link>
+    <div className="p-8 max-w-3xl mx-auto">
+      <h1 className="text-4xl font-bold mb-4">{trip.title}</h1>
 
-        <div className="flex items-center gap-6 text-sm">
-          <Link href="/plan" className="hover:text-white text-slate-300">
-            Plan a Trip
-          </Link>
-          <Link href="/trips" className="hover:text-white text-slate-300">
-            My Trips
-          </Link>
-        </div>
-      </nav>
+      <p className="text-gray-600 text-lg mb-2">{trip.destination}</p>
 
-      {/* TRIP HEADER */}
-      <header className="max-w-5xl mx-auto px-4 py-10 fade-in">
-        <h1 className="text-4xl font-bold mb-2">
-          {trip.destination}: {trip.days}-day itinerary
-        </h1>
-
-        <p className="text-slate-300 text-sm">
-          Saved on {new Date(trip.createdAt).toLocaleDateString()}
+      {trip.startDate && trip.endDate && (
+        <p className="text-gray-500 mb-4">
+          {trip.startDate} → {trip.endDate}
         </p>
+      )}
 
-        <div className="text-slate-400 text-sm mt-2 space-y-1">
-          {trip.pace && <p>Pace: {trip.pace}</p>}
-          {trip.vibes && <p>Vibes: {trip.vibes}</p>}
-          {trip.groupType && <p>Group: {trip.groupType}</p>}
-          {trip.notes && <p>Notes: {trip.notes}</p>}
+      {trip.imageUrl && (
+        <img
+          src={trip.imageUrl}
+          alt={trip.title}
+          className="w-full h-64 object-cover rounded-lg mb-6"
+        />
+      )}
+
+      {trip.days && (
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold mb-2">Trip Duration</h2>
+          <p>{trip.days} days</p>
         </div>
-      </header>
+      )}
 
-      {/* ITINERARY */}
-      <section className="max-w-5xl mx-auto px-4 space-y-6 pb-20">
-        {trip.itineraryJson.map((day: any, index: number) => (
-          <article
-            key={index}
-            className="rounded-xl border border-white/10 bg-white/5 p-6 fade-up"
-          >
-            <h2 className="text-2xl font-semibold mb-4">Day {day.day}</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-              <div>
-                <p className="text-slate-400 uppercase text-xs mb-1">Morning</p>
-                <p>{day.morning?.title}</p>
-                <p className="text-slate-400 text-xs">{day.morning?.desc}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400 uppercase text-xs mb-1">Afternoon</p>
-                <p>{day.afternoon?.title}</p>
-                <p className="text-slate-400 text-xs">{day.afternoon?.desc}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400 uppercase text-xs mb-1">Evening</p>
-                <p>{day.evening?.title}</p>
-                <p className="text-slate-400 text-xs">{day.evening?.desc}</p>
-              </div>
-            </div>
-          </article>
-        ))}
-      </section>
-    </main>
+      {trip.tripData && (
+        <div>
+          <h2 className="text-2xl font-semibold mb-3">Itinerary</h2>
+          <pre className="bg-gray-100 p-4 rounded-lg whitespace-pre-wrap text-sm">
+            {JSON.stringify(trip.tripData, null, 2)}
+          </pre>
+        </div>
+      )}
+    </div>
   );
 }

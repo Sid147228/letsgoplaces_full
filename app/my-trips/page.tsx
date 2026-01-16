@@ -1,11 +1,12 @@
-import { auth } from "@/auth.config";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 
 export default async function MyTripsPage() {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
 
-  if (!session || !session.user?.email) {
+  if (!session || !session.user?.id) {
     return (
       <div className="p-8 text-center">
         <h2 className="text-xl font-semibold">You must be logged in to view your trips.</h2>
@@ -15,7 +16,7 @@ export default async function MyTripsPage() {
 
   const trips = await prisma.trip.findMany({
     where: {
-      userEmail: session.user.email,
+      userId: session.user.id,
     },
     orderBy: {
       createdAt: "desc",
@@ -42,20 +43,15 @@ export default async function MyTripsPage() {
             href={`/trip/${trip.id}`}
             className="border rounded-lg p-4 shadow hover:shadow-lg transition"
           >
-            {trip.imageUrl && (
-              <img
-                src={trip.imageUrl}
-                alt={trip.title}
-                className="w-full h-40 object-cover rounded"
-              />
+            <h3 className="text-xl font-semibold mt-3">{trip.destination}</h3>
+
+            {trip.days && (
+              <p className="text-gray-600">{trip.days} days</p>
             )}
 
-            <h3 className="text-xl font-semibold mt-3">{trip.title}</h3>
-            <p className="text-gray-600">{trip.destination}</p>
-
-            {trip.startDate && trip.endDate && (
+            {trip.createdAt && (
               <p className="text-sm text-gray-500 mt-1">
-                {trip.startDate} → {trip.endDate}
+                Created on {trip.createdAt.toDateString()}
               </p>
             )}
           </Link>

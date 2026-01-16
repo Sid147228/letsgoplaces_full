@@ -1,11 +1,18 @@
-import { auth } from "@/auth.config";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
-export default async function TripDetailPage({ params }: { params: { id: string } }) {
-  const session = await auth();
+interface TripPageProps {
+  params: {
+    id: string;
+  };
+}
 
-  if (!session || !session.user?.email) {
+export default async function TripDetailsPage({ params }: TripPageProps) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.id) {
     return (
       <div className="p-8 text-center">
         <h2 className="text-xl font-semibold">You must be logged in to view this trip.</h2>
@@ -17,50 +24,39 @@ export default async function TripDetailPage({ params }: { params: { id: string 
     where: { id: params.id },
   });
 
-  if (!trip) {
+  if (!trip || trip.userId !== session.user.id) {
     return notFound();
-  }
-
-  if (trip.userEmail !== session.user.email) {
-    return (
-      <div className="p-8 text-center">
-        <h2 className="text-xl font-semibold">You do not have access to this trip.</h2>
-      </div>
-    );
   }
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
-      <h1 className="text-4xl font-bold mb-4">{trip.title}</h1>
+      <h1 className="text-4xl font-bold mb-4">{trip.destination}</h1>
 
-      <p className="text-gray-600 text-lg mb-2">{trip.destination}</p>
+      <div className="text-gray-600 mb-4">
+        <p><strong>Days:</strong> {trip.days}</p>
 
-      {trip.startDate && trip.endDate && (
-        <p className="text-gray-500 mb-4">
-          {trip.startDate} → {trip.endDate}
-        </p>
-      )}
+        {trip.pace && (
+          <p><strong>Pace:</strong> {trip.pace}</p>
+        )}
 
-      {trip.imageUrl && (
-        <img
-          src={trip.imageUrl}
-          alt={trip.title}
-          className="w-full h-64 object-cover rounded-lg mb-6"
-        />
-      )}
+        {trip.vibes && (
+          <p><strong>Vibes:</strong> {trip.vibes}</p>
+        )}
 
-      {trip.days && (
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold mb-2">Trip Duration</h2>
-          <p>{trip.days} days</p>
-        </div>
-      )}
+        {trip.groupType && (
+          <p><strong>Group Type:</strong> {trip.groupType}</p>
+        )}
 
-      {trip.tripData && (
-        <div>
-          <h2 className="text-2xl font-semibold mb-3">Itinerary</h2>
-          <pre className="bg-gray-100 p-4 rounded-lg whitespace-pre-wrap text-sm">
-            {JSON.stringify(trip.tripData, null, 2)}
+        {trip.notes && (
+          <p className="mt-2"><strong>Notes:</strong> {trip.notes}</p>
+        )}
+      </div>
+
+      {trip.itineraryJson && (
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold mb-2">Itinerary</h2>
+          <pre className="bg-gray-100 p-4 rounded text-sm overflow-x-auto">
+            {JSON.stringify(trip.itineraryJson, null, 2)}
           </pre>
         </div>
       )}

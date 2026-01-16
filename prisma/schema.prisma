@@ -21,10 +21,15 @@ model Trip {
   userId        String
   user          User     @relation(fields: [userId], references: [id])
 
+  title         String
   destination   String
+  imageUrl      String?
+  startDate     String?
+  endDate       String?
+
   days          Int
   pace          String?
-  vibes         String?   // comma-separated
+  vibes         String?
   groupType     String?
   notes         String?
   itineraryJson Json?

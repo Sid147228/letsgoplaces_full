@@ -29,38 +29,26 @@ export async function POST(req: Request) {
 
   const body = await req.json();
 
-  const {
-    title,
-    destination,
-    imageUrl,
-    startDate,
-    endDate,
-    days,
-    pace,
-    vibes,
-    groupType,
-    notes,
-    itineraryJson,
-  } = body;
-
-  const trip = await prisma.trip.create({
-    data: {
-      title,
-      destination,
-      imageUrl,
-      startDate,
-      endDate,
-      days,
-      pace,
-      vibes,
-      groupType,
-      notes,
-      itineraryJson,
-      user: {
-        connect: { id: session.user.id },
+  try {
+    const trip = await prisma.trip.create({
+      data: {
+        destination: body.destination,
+        days: body.days,
+        pace: body.pace,
+        vibes: body.vibes,
+        groupType: body.groupType,
+        notes: body.notes,
+        itineraryJson: body.itineraryJson,
+        userId: session.user.id, // direct relation
       },
-    },
-  });
+    });
 
-  return NextResponse.json(trip, { status: 201 });
+    return NextResponse.json(trip, { status: 201 });
+  } catch (err) {
+    console.error("Error saving trip:", err);
+    return NextResponse.json(
+      { error: "Failed to save trip" },
+      { status: 500 }
+    );
+  }
 }

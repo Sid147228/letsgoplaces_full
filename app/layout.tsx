@@ -1,8 +1,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import SessionProvider from "@/components/SessionProvider";
-import AuthBar from "@/components/AuthBar";
 import NavBar from "./components/NavBar";
+import { ToastProvider } from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
   title: "LetsGoPlaces – Calm, Smart Travel Planning",
@@ -16,30 +16,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="bg-black text-white antialiased">
         <SessionProvider>
-          {/* Top auth bar (login/logout) */}
-          <AuthBar />
+          <ToastProvider>
+            <div className="min-h-screen flex flex-col">
 
-          <div className="min-h-screen flex flex-col">
-            {/* Global NavBar visible on every page */}
-            <NavBar />
+              {/* Global NavBar */}
+              <NavBar />
 
-            {/* Page content */}
-            <main className="flex-1">{children}</main>
+              {/* Page content */}
+              <main className="flex-1">{children}</main>
 
-            {/* Footer */}
-            <footer className="border-t border-white/10 bg-black/90">
-              <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-                <p>
-                  © {new Date().getFullYear()} LetsGoPlaces. All rights
-                  reserved.
-                </p>
-                <p>Built for travelers who prefer calm over chaos.</p>
-              </div>
-            </footer>
-          </div>
+              {/* Footer */}
+              <footer className="border-t border-white/10 bg-black/90">
+                <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+                  <p>
+                    © {new Date().getFullYear()} LetsGoPlaces. All rights reserved.
+                  </p>
+                  <p>Built for travelers who prefer calm over chaos.</p>
+                </div>
+              </footer>
+
+            </div>
+          </ToastProvider>
         </SessionProvider>
       </body>
     </html>

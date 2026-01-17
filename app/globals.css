@@ -81,3 +81,18 @@ p {
 .btn-outline {
   @apply px-6 py-3 rounded-full border border-white/30 text-white transition hover:bg-white hover:text-black;
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}

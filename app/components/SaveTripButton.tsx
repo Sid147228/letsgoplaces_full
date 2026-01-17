@@ -1,7 +1,9 @@
 "use client";
 
 import { useSession, signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useToast } from "@/components/ui/Toast";
 
 type TripPayload = {
   destination: string;
@@ -15,10 +17,14 @@ type TripPayload = {
 
 export default function SaveTripButton({ trip }: { trip: TripPayload }) {
   const { data: session } = useSession();
+  const router = useRouter();
+  const { showToast } = useToast();
+
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSave() {
+    // If user is not logged in → trigger Google login
     if (!session) {
       signIn("google");
       return;
@@ -26,16 +32,27 @@ export default function SaveTripButton({ trip }: { trip: TripPayload }) {
 
     setLoading(true);
 
-    const res = await fetch("/api/trips/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(trip),
-    });
+    try {
+      const res = await fetch("/api/trips", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(trip),
+      });
 
-    setLoading(false);
+      if (!res.ok) {
+        showToast("Something went wrong while saving your trip.", "error");
+        throw new Error("Failed to save trip");
+      }
 
-    if (res.ok) {
       setSaved(true);
+      showToast("Trip saved to My Trips!", "success");
+
+      // Redirect to My Trips after saving
+      router.push("/my-trips");
+    } catch (err) {
+      showToast("Something went wrong while saving your trip.", "error");
+    } finally {
+      setLoading(false);
     }
   }
 

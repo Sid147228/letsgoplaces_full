@@ -1,7 +1,11 @@
 import GoogleProvider from "next-auth/providers/google";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "@/lib/prisma";
 import type { NextAuthOptions } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
+
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -10,21 +14,29 @@ export const authOptions: NextAuthOptions = {
   ],
 
   pages: {
-    signIn: "/",     // If user tries to access protected page → send to homepage
-    signOut: "/",    // After logout → homepage
-    error: "/",      // Any auth error → homepage
+    signIn: "/",
+    signOut: "/",
+    error: "/",
   },
 
   callbacks: {
-    async session({ session, token }) {
+    async session({ session, user }) {
       if (session.user) {
-        session.user.id = token.sub!;
+        // Ensure the session always contains the real DB user ID
+        session.user.id = user.id;
       }
       return session;
     },
 
-    async redirect({ url, baseUrl }) {
-      // Always redirect to My Trips after login
+    async jwt({ token, user }) {
+      // When user logs in for the first time, attach DB user ID to token
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+
+    async redirect() {
       return "/my-trips";
     },
   },

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@/app/components/ui/Toast";
 
 export default function EditTripForm({ trip }: { trip: any }) {
   const router = useRouter();

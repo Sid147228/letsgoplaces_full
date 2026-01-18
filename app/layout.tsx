@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import SessionProvider from "@/components/SessionProvider";
 import NavBar from "@/app/components/NavBar";
-import { ToastProvider } from "@app/components/ui/Toast";
+import { ToastProvider } from "@/app/components/ui/Toast";
 
 export const metadata: Metadata = {
   title: "LetsGoPlaces – Calm, Smart Travel Planning",

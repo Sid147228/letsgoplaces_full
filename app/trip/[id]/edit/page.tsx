@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import EditTripForm from "@app/components/EditTripForm";
+import EditTripForm from "@/app/components/EditTripForm";
 
 export default async function EditTripPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);

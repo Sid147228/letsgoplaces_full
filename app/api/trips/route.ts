@@ -3,35 +3,24 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 
-// GET — fetch all trips for the logged‑in user
-export async function GET() {
-  const session = await getServerSession(authOptions);
-
-  if (!session || !session.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const trips = await prisma.trip.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
-
-  return NextResponse.json(trips);
-}
-
-// POST — create a new trip
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-
-  if (!session || !session.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const body = await req.json();
-
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+
+    // ⭐ FIX: Prisma requires title
+    const generatedTitle =
+      body.title ||
+      `${body.destination || "Trip"} - ${body.days || ""} Days`.trim();
+
     const trip = await prisma.trip.create({
       data: {
+        title: generatedTitle, // ⭐ REQUIRED FIELD
         destination: body.destination,
         days: body.days,
         pace: body.pace,
@@ -39,15 +28,15 @@ export async function POST(req: Request) {
         groupType: body.groupType,
         notes: body.notes,
         itineraryJson: body.itineraryJson,
-        userId: session.user.id, // direct relation
+        userId: session.user.id,
       },
     });
 
     return NextResponse.json(trip, { status: 201 });
-  } catch (err) {
-    console.error("Error saving trip:", err);
+  } catch (error) {
+    console.error("Error creating trip:", error);
     return NextResponse.json(
-      { error: "Failed to save trip" },
+      { error: "Failed to create trip" },
       { status: 500 }
     );
   }

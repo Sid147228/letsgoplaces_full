@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { ActivityIcon } from "@/app/components/ui/ActivityIcon";
+import { getActivityIcon } from "@/app/components/ui/ActivityIcon";
 import DeleteTripButton from "@/app/components/DeleteTripButton";
-
 
 export default function TripDetailPage() {
   const params = useParams();
@@ -22,7 +21,7 @@ export default function TripDetailPage() {
         const data = await res.json();
         setTrip(data);
 
-        // ⭐ FIX: Safely parse itineraryJson regardless of type
+        // ⭐ Safe JSON parsing for Prisma Json type
         const raw =
           typeof data.itineraryJson === "string"
             ? data.itineraryJson
@@ -81,7 +80,7 @@ export default function TripDetailPage() {
 
             {/* Morning */}
             <div className="flex gap-4 items-start">
-              <ActivityIcon type="morning" />
+              {getActivityIcon("morning")}
               <div>
                 <h3 className="font-semibold">{day.morning.title}</h3>
                 <p className="text-slate-400 text-sm">{day.morning.desc}</p>
@@ -90,7 +89,7 @@ export default function TripDetailPage() {
 
             {/* Afternoon */}
             <div className="flex gap-4 items-start">
-              <ActivityIcon type="afternoon" />
+              {getActivityIcon("afternoon")}
               <div>
                 <h3 className="font-semibold">{day.afternoon.title}</h3>
                 <p className="text-slate-400 text-sm">{day.afternoon.desc}</p>
@@ -99,7 +98,7 @@ export default function TripDetailPage() {
 
             {/* Evening */}
             <div className="flex gap-4 items-start">
-              <ActivityIcon type="evening" />
+              {getActivityIcon("evening")}
               <div>
                 <h3 className="font-semibold">{day.evening.title}</h3>
                 <p className="text-slate-400 text-sm">{day.evening.desc}</p>

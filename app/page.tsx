@@ -5,8 +5,7 @@ import NavBar from "@/app/components/NavBar";
 export default function Home() {
   return (
     <div className="bg-black text-white">
-      <NavBar />
-
+     
       {/* HERO — replaced with full background image */}
       <section
         className="relative w-full h-[90vh] bg-cover bg-center bg-no-repeat flex items-center justify-center border-b border-white/10"

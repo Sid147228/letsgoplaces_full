@@ -3,8 +3,8 @@ import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getActivityIcon } from "@/components/ui/ActivityIcon";
-import DeleteTripButton from "@/components/DeleteTripButton";
+import { getActivityIcon } from "@app/components/ui/ActivityIcon";
+import DeleteTripButton from "@app/components/DeleteTripButton";
 
 interface TripPageProps {
   params: {

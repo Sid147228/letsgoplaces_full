@@ -3,7 +3,7 @@
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@app/components/ui/Toast";
 
 type TripPayload = {
   destination: string;

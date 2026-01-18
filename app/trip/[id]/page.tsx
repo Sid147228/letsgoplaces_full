@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import prisma from "@/lib/prisma";
-import ActivityIcon from "@/app/components/ui/ActivityIcon";
+import { ActivityIcon } from "@/app/components/ui/ActivityIcon";
 import DeleteTripButton from "@/app/components/DeleteTripButton";
+
 
 export default function TripDetailPage() {
   const params = useParams();

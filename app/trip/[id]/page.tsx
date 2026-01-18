@@ -1,132 +1,114 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import prisma from "@/lib/prisma";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getActivityIcon } from "@/app/components/ui/ActivityIcon";
+import ActivityIcon from "@/app/components/ui/ActivityIcon";
 import DeleteTripButton from "@/app/components/DeleteTripButton";
 
-interface TripPageProps {
-  params: {
-    id: string;
-  };
-}
+export default function TripDetailPage() {
+  const params = useParams();
+  const id = params?.id as string;
 
-export default async function TripPage({ params }: TripPageProps) {
-  const session = await getServerSession(authOptions);
+  const [trip, setTrip] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [itinerary, setItinerary] = useState<any[]>([]);
 
-  // User must be logged in
-  if (!session || !session.user?.id) {
+  useEffect(() => {
+    async function fetchTrip() {
+      try {
+        const res = await fetch(`/api/trips/${id}`);
+        const data = await res.json();
+        setTrip(data);
+
+        // ⭐ FIX: Safely parse itineraryJson regardless of type
+        const raw =
+          typeof data.itineraryJson === "string"
+            ? data.itineraryJson
+            : JSON.stringify(data.itineraryJson || []);
+
+        const parsed = JSON.parse(raw);
+        setItinerary(parsed);
+      } catch (err) {
+        console.error("Failed to load trip:", err);
+        setItinerary([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (id) fetchTrip();
+  }, [id]);
+
+  if (loading) {
     return (
-      <div className="p-12 text-center">
-        <h2 className="text-2xl font-semibold">You must be logged in to view this trip.</h2>
-        <p className="text-slate-400 mt-2">Please sign in and try again.</p>
+      <div className="text-white text-center py-20">
+        Loading your trip...
       </div>
     );
   }
 
-  // Fetch trip
-  const trip = await prisma.trip.findUnique({
-    where: { id: params.id },
-  });
-
-  // Trip not found or belongs to another user
-  if (!trip || trip.userId !== session.user.id) {
-    return notFound();
-  }
-
-  // Parse itinerary JSON safely
-  let itinerary: any[] = [];
-  try {
-    itinerary = JSON.parse(trip.itineraryJson || "[]");
-  } catch {
-    itinerary = [];
+  if (!trip) {
+    return (
+      <div className="text-white text-center py-20">
+        Trip not found.
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      {/* Destination */}
-      <h1 className="text-4xl font-bold mb-4">{trip.destination}</h1>
-
-      {/* Meta info */}
-      <div className="text-slate-400 mb-6 space-y-1">
-        <p><strong className="text-white">Days:</strong> {trip.days}</p>
-
-        {trip.pace && (
-          <p><strong className="text-white">Pace:</strong> {trip.pace}</p>
-        )}
-
-        {trip.vibes && (
-          <p><strong className="text-white">Vibes:</strong> {trip.vibes}</p>
-        )}
-
-        {trip.groupType && (
-          <p><strong className="text-white">Group Type:</strong> {trip.groupType}</p>
-        )}
-
-        {trip.notes && (
-          <p className="mt-2">
-            <strong className="text-white">Notes:</strong> {trip.notes}
-          </p>
-        )}
-
-        <p className="text-xs text-slate-500 mt-3">
-          Created on {new Date(trip.createdAt).toLocaleDateString()}
+    <div className="bg-black text-white min-h-screen pb-20">
+      {/* Header */}
+      <header className="py-10 text-center space-y-2 border-b border-white/10">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+          {trip.title}
+        </h1>
+        <p className="text-slate-400 text-sm">
+          {trip.destination} • {trip.days} days
         </p>
-      </div>
+
+        <div className="flex justify-center mt-4">
+          <DeleteTripButton tripId={trip.id} />
+        </div>
+      </header>
 
       {/* Itinerary */}
-      <div className="mt-10 space-y-8">
-        <h2 className="text-2xl font-semibold mb-2">Itinerary</h2>
-
-        {itinerary.length === 0 && (
-          <p className="text-slate-400">No itinerary data available.</p>
-        )}
-
+      <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
         {itinerary.map((day: any, index: number) => (
-          <div
-            key={index}
-            className="border border-white/10 rounded-xl p-6 bg-black/40 backdrop-blur"
-          >
-            {/* Day Header */}
-            <div className="mb-4">
-              <h3 className="text-xl font-semibold">Day {index + 1}</h3>
-              {day.summary && (
-                <p className="text-slate-400 text-sm mt-1">{day.summary}</p>
-              )}
+          <div key={index} className="space-y-6">
+            <h2 className="text-xl font-semibold">Day {day.day}</h2>
+
+            {/* Morning */}
+            <div className="flex gap-4 items-start">
+              <ActivityIcon type="morning" />
+              <div>
+                <h3 className="font-semibold">{day.morning.title}</h3>
+                <p className="text-slate-400 text-sm">{day.morning.desc}</p>
+              </div>
             </div>
 
-            {/* Activities */}
-            <div className="space-y-3">
-              {day.activities?.map((activity: string, i: number) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10"
-                >
-                  <div className="mt-1">{getActivityIcon(activity)}</div>
-                  <p className="text-slate-200">{activity}</p>
-                </div>
-              ))}
+            {/* Afternoon */}
+            <div className="flex gap-4 items-start">
+              <ActivityIcon type="afternoon" />
+              <div>
+                <h3 className="font-semibold">{day.afternoon.title}</h3>
+                <p className="text-slate-400 text-sm">{day.afternoon.desc}</p>
+              </div>
             </div>
+
+            {/* Evening */}
+            <div className="flex gap-4 items-start">
+              <ActivityIcon type="evening" />
+              <div>
+                <h3 className="font-semibold">{day.evening.title}</h3>
+                <p className="text-slate-400 text-sm">{day.evening.desc}</p>
+              </div>
+            </div>
+
+            <hr className="border-white/10" />
           </div>
         ))}
-      </div>
-
-      {/* Divider */}
-      <hr className="border-white/10 my-10" />
-
-      {/* Actions */}
-      <div className="flex items-center gap-4">
-        <Link
-          href="/my-trips"
-          className="px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-semibold"
-        >
-          Back to My Trips
-        </Link>
-
-        <DeleteTripButton tripId={trip.id} />
       </div>
     </div>
   );
 }
-s

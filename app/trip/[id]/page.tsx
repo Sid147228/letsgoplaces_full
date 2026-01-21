@@ -58,6 +58,18 @@ export default function TripDetailPage() {
 
   return (
     <div className="bg-black text-white min-h-screen pb-20">
+
+      {/* ⭐ HERO IMAGE */}
+      {trip.heroImage && (
+        <div className="w-full h-64 md:h-80 lg:h-96 overflow-hidden">
+          <img
+            src={trip.heroImage}
+            alt={trip.destination}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+
       {/* Header */}
       <header className="py-10 text-center space-y-2 border-b border-white/10">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
@@ -67,7 +79,7 @@ export default function TripDetailPage() {
           {trip.destination} • {trip.days} days
         </p>
 
-        {/* Delete + Share */}
+        {/* Delete + Share + Duplicate */}
         <div className="flex justify-center gap-6 mt-4">
           <DeleteTripButton tripId={trip.id} />
           <TripActions trip={trip} />

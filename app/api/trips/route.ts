@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
-
+import { getHeroImage } from "@/lib/getHeroImage";
 
 export async function POST(req: Request) {
   try {
@@ -14,14 +14,18 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    // ⭐ FIX: Prisma requires title
+    // ⭐ Generate a fallback title if missing
     const generatedTitle =
       body.title ||
       `${body.destination || "Trip"} - ${body.days || ""} Days`.trim();
 
+    // ⭐ Fetch hero image based on destination
+    const heroImage = await getHeroImage(body.destination);
+
+    // ⭐ Create trip with heroImage included
     const trip = await prisma.trip.create({
       data: {
-        title: generatedTitle, // ⭐ REQUIRED FIELD
+        title: generatedTitle,
         destination: body.destination,
         days: body.days,
         pace: body.pace,
@@ -30,6 +34,7 @@ export async function POST(req: Request) {
         notes: body.notes,
         itineraryJson: body.itineraryJson,
         userId: session.user.id,
+        heroImage, // ⭐ NEW FIELD
       },
     });
 

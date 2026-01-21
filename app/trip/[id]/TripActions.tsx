@@ -3,43 +3,49 @@
 import { useSession } from "next-auth/react";
 import { useToast } from "@/app/components/ui/Toast";
 import { useModal } from "@/app/context/ModalContext";
+import { useRouter } from "next/navigation";
+import ShareTripButton from "@/app/components/ShareTripButton";
 
 export default function TripActions({ trip }) {
   const { data: session } = useSession();
   const { showToast } = useToast();
   const { openSignIn } = useModal();
+  const router = useRouter();
 
-  function handleShare() {
+  async function handleDuplicate() {
     if (!session) {
       openSignIn();
       return;
     }
 
     try {
-      const shareData = {
-        title: `My trip to ${trip.destination}`,
-        text: `Check out my ${trip.days}-day trip to ${trip.destination}!`,
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/trip/${trip.id}`,
-      };
+      const res = await fetch(`/api/trips/${trip.id}/duplicate`, {
+        method: "POST",
+      });
 
-      if (navigator.share) {
-        navigator.share(shareData);
-      } else {
-        navigator.clipboard.writeText(shareData.url);
-        showToast("Link copied to clipboard!", "success");
+      if (!res.ok) {
+        showToast("Unable to duplicate trip.", "error");
+        return;
       }
+
+      const newTrip = await res.json();
+      router.push(`/trip/${newTrip.id}`);
     } catch (err) {
-      showToast("Unable to share this trip.", "error");
+      showToast("Something went wrong.", "error");
     }
   }
 
   return (
-    <div className="flex gap-4 mt-4">
+    <div className="flex gap-6 mt-4">
+      {/* Public Share Button */}
+      <ShareTripButton trip={trip} />
+
+      {/* Duplicate Trip */}
       <button
-        onClick={handleShare}
+        onClick={handleDuplicate}
         className="text-blue-500 underline text-sm"
       >
-        Share
+        Duplicate
       </button>
     </div>
   );

@@ -81,7 +81,7 @@ export default function PublicTripPage() {
             imageLoaded ? "opacity-100" : "opacity-0"
           }`}
           onLoad={() => setImageLoaded(true)}
-          onError={() => setImageLoaded(true)} // fallback still shows shimmer
+          onError={() => setImageLoaded(true)}
         />
       </div>
 

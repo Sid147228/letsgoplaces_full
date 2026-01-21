@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs"; // ⭐ Updated
 import crypto from "crypto";
 import { Resend } from "resend";
 
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Hash password
+    // ⭐ Hash password using bcryptjs
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
@@ -66,6 +66,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Signup error:", err);
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 }
+    );
   }
 }

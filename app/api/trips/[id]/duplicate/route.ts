@@ -24,8 +24,12 @@ export async function POST(
         vibes: trip.vibes,
         groupType: trip.groupType,
         notes: trip.notes,
-        itineraryJson: trip.itineraryJson,
+
+        // ⭐ FIX: Convert Prisma JsonValue → InputJsonValue
+        itineraryJson: JSON.parse(JSON.stringify(trip.itineraryJson)),
+
         publicId: null, // new trip should not be public
+        heroImage: trip.heroImage ?? null, // keep hero image if exists
       },
     });
 

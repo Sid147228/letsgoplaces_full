@@ -4,21 +4,20 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { email, password } = body;
+    const { email, password } = await req.json();
 
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
-    if (!user) {
+    if (!user || !user.password) {
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    // ⭐ bcryptjs compare
+    // ⭐ bcryptjs compare — now guaranteed to receive a string
     const valid = await bcrypt.compare(password, user.password);
 
     if (!valid) {

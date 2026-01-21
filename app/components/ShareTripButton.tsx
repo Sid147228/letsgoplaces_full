@@ -5,14 +5,22 @@ import { useToast } from "@/app/components/ui/Toast";
 import { useModal } from "@/app/context/ModalContext";
 import { useState } from "react";
 
-export default function ShareTripButton({ trip }) {
+// ⭐ Define the Trip type used by this component
+type Trip = {
+  id: string;
+  title: string;
+  destination: string;
+  days: number;
+  publicId: string | null;
+};
+
+export default function ShareTripButton({ trip }: { trip: Trip }) {
   const { data: session } = useSession();
   const { showToast } = useToast();
   const { openSignIn } = useModal();
   const [loading, setLoading] = useState(false);
 
   async function ensurePublicId() {
-    // If trip already has a publicId → return it
     if (trip.publicId) return trip.publicId;
 
     try {

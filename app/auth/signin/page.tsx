@@ -110,7 +110,7 @@ export default function SignInPage() {
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don’t have an account?{" "}
+          Donâ€™t have an account?{" "}
           <Link href="/auth/signup" className="text-black font-medium">
             Sign up
           </Link>
@@ -119,3 +119,4 @@ export default function SignInPage() {
     </div>
   );
 }
+

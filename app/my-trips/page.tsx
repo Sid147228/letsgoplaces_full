@@ -2,24 +2,22 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getDestinationImage } from "@/lib/getDestinationImage";
 
 export default async function MyTripsPage() {
   const session = await getServerSession(authOptions);
 
-  // If user is not logged in
+  // Full protection: redirect if not logged in
   if (!session || !session.user?.id) {
-    return (
-      <div className="p-12 text-center">
-        <h2 className="text-2xl font-semibold">You must be logged in to view your trips.</h2>
-        <p className="text-slate-400 mt-2">Sign in and start planning your adventures.</p>
-      </div>
-    );
+    redirect("/auth/signin");
   }
 
-  // Fetch trips
+  const userId = session.user.id;
+
+  // Fetch trips for this user
   const trips = await prisma.trip.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     orderBy: { createdAt: "desc" },
   });
 

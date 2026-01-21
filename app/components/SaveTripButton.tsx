@@ -1,9 +1,10 @@
 "use client";
 
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useToast } from "@/app/components/ui/Toast";
+import { useModal } from "@/app/context/ModalContext";
 
 type TripPayload = {
   destination: string;
@@ -19,14 +20,15 @@ export default function SaveTripButton({ trip }: { trip: TripPayload }) {
   const { data: session } = useSession();
   const router = useRouter();
   const { showToast } = useToast();
+  const { openSignIn } = useModal();
 
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSave() {
-    // If user is not logged in → trigger Google login
-    if (!session) {
-      signIn("google");
+    // If user is not logged in → open Sign-In modal
+    if (!session || !session.user?.id) {
+      openSignIn();
       return;
     }
 
@@ -36,7 +38,10 @@ export default function SaveTripButton({ trip }: { trip: TripPayload }) {
       const res = await fetch("/api/trips", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(trip),
+        body: JSON.stringify({
+          ...trip,
+          userId: session.user.id, // Always attach userId
+        }),
       });
 
       if (!res.ok) {

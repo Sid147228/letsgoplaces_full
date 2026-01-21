@@ -7,25 +7,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id      String  @id @default(cuid())
-  name    String?
-  email   String? @unique
-  image   String?
+//
+// ─────────────────────────────────────────────
+// USER MODEL (Email/Password + Google OAuth)
+// ─────────────────────────────────────────────
+//
 
-  trips   Trip[]
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  password       String?   // hashed password for email/password users
+  emailVerified  DateTime?
+  image          String?
+
+  // NextAuth relations
+  accounts       Account[]
+  sessions       Session[]
+
+  // App relations
+  trips          Trip[]
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
+
+//
+// ─────────────────────────────────────────────
+// TRIP MODEL
+// ─────────────────────────────────────────────
+//
 
 model Trip {
   id            String   @id @default(cuid())
   userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   title         String
   destination   String
   imageUrl      String?
-  startDate     String?
-  endDate       String?
+  startDate     DateTime?
+  endDate       DateTime?
 
   days          Int
   pace          String?
@@ -33,6 +55,56 @@ model Trip {
   groupType     String?
   notes         String?
   itineraryJson Json?
+  publicId   String?   @unique
 
   createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+//
+// ─────────────────────────────────────────────
+// NEXTAUTH MODELS (Required for PrismaAdapter)
+// ─────────────────────────────────────────────
+//
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+//
+// ─────────────────────────────────────────────
+// EMAIL VERIFICATION TOKENS
+// ─────────────────────────────────────────────
+//
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

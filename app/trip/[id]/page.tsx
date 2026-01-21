@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import prisma from "@/lib/prisma";
 import { getActivityIcon } from "@/app/components/ui/ActivityIcon";
 import DeleteTripButton from "@/app/components/DeleteTripButton";
+import TripActions from "./TripActions";
 
 export default function TripDetailPage() {
   const params = useParams();
@@ -67,8 +67,10 @@ export default function TripDetailPage() {
           {trip.destination} • {trip.days} days
         </p>
 
-        <div className="flex justify-center mt-4">
+        {/* Delete + Share */}
+        <div className="flex justify-center gap-6 mt-4">
           <DeleteTripButton tripId={trip.id} />
+          <TripActions trip={trip} />
         </div>
       </header>
 

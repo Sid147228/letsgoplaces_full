@@ -6,7 +6,17 @@ import { useModal } from "@/app/context/ModalContext";
 import { useRouter } from "next/navigation";
 import ShareTripButton from "@/app/components/ShareTripButton";
 
-export default function TripActions({ trip }) {
+// ⭐ Define the Trip type used by this component
+type Trip = {
+  id: string;
+  title: string;
+  destination: string;
+  days: number;
+  publicId: string | null;
+  heroImage?: string | null;
+};
+
+export default function TripActions({ trip }: { trip: Trip }) {
   const { data: session } = useSession();
   const { showToast } = useToast();
   const { openSignIn } = useModal();

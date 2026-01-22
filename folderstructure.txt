@@ -1,0 +1,31 @@
+app/
+  page.tsx  // landing page
+
+components/landing/
+  Hero.tsx
+  FeatureGrid.tsx
+  HowItWorks.tsx
+  Testimonials.tsx
+  Pricing.tsx
+  CtaBanner.tsx
+  Footer.tsx
+
+components/ui/
+  Button.tsx
+  Badge.tsx
+  SectionHeading.tsx
+
+
+
+app/
+  page.tsx                // landing page
+  generate/
+    page.tsx              // step 1
+    step2.tsx
+    step3.tsx
+  auth/
+    signin/page.tsx
+    signup/page.tsx
+  dashboard/page.tsx
+  pricing/page.tsx
+  trips/[id]/page.tsx

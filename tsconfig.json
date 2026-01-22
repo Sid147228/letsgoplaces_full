@@ -40,3 +40,13 @@
     "node_modules"
   ]
 }
+
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./"]
+    }
+  }
+}
+

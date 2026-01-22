@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import "./globals.css";
 import type { Metadata } from "next";
 import SessionProvider from "@/components/SessionProvider";

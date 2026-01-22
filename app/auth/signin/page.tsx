@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
@@ -110,7 +110,7 @@ export default function SignInPage() {
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-600">
-          Donâ€™t have an account?{" "}
+          DonÃ¢â‚¬â„¢t have an account?{" "}
           <Link href="/auth/signup" className="text-black font-medium">
             Sign up
           </Link>
@@ -119,4 +119,5 @@ export default function SignInPage() {
     </div>
   );
 }
+
 

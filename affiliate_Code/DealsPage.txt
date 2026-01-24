@@ -1,0 +1,314 @@
+import { useState, useEffect } from "react";
+import { Navigation } from "@/components/layout/Navigation";
+import { Footer } from "@/components/layout/Footer";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { 
+  Hotel, 
+  Map, 
+  Compass, 
+  Search, 
+  ExternalLink,
+  Tag,
+  Star,
+  ArrowRight
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface AffiliateDeal {
+  id: string;
+  title: string;
+  description: string;
+  destination: string;
+  deal_type: string;
+  discount_text: string;
+  price_from: number;
+  currency: string;
+  image_url: string;
+  affiliate_url: string;
+  is_featured: boolean;
+  partner: {
+    name: string;
+    slug: string;
+  };
+}
+
+const dealTypeIcons: Record<string, typeof Hotel> = {
+  hotel: Hotel,
+  activity: Compass,
+  tour: Map,
+  package: Star,
+};
+
+const dealTypeColors: Record<string, string> = {
+  hotel: "from-ocean to-primary",
+  activity: "from-accent to-teal",
+  tour: "from-sunset to-coral",
+  package: "from-primary to-accent",
+};
+
+export default function Deals() {
+  const [deals, setDeals] = useState<AffiliateDeal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    fetchDeals();
+  }, []);
+
+  const fetchDeals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("affiliate_deals" as any)
+        .select(`
+          *,
+          partner:affiliate_partners(name, slug)
+        `)
+        .eq("is_active", true)
+        .order("is_featured", { ascending: false });
+
+      if (error) throw error;
+      setDeals(data as unknown as AffiliateDeal[]);
+    } catch (error) {
+      console.error("Error fetching deals:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDealClick = async (deal: AffiliateDeal) => {
+    // Track the click
+    try {
+      await supabase.from("affiliate_clicks" as any).insert({
+        user_id: user?.id || null,
+        deal_id: deal.id,
+        click_source: "deals_page",
+        destination: deal.destination,
+      });
+    } catch (error) {
+      console.error("Error tracking click:", error);
+    }
+
+    // Open affiliate URL
+    window.open(deal.affiliate_url, "_blank", "noopener,noreferrer");
+  };
+
+  const filteredDeals = deals.filter((deal) => {
+    const matchesSearch =
+      deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      deal.destination?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      deal.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = !activeFilter || deal.deal_type === activeFilter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const featuredDeals = filteredDeals.filter((d) => d.is_featured);
+  const regularDeals = filteredDeals.filter((d) => !d.is_featured);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navigation />
+
+      <main className="flex-1 pt-28 pb-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <Badge variant="outline" className="mb-4 border-accent/30 bg-accent/10 text-accent">
+              <Tag className="h-3 w-3 mr-1" />
+              Exclusive Partner Deals
+            </Badge>
+            <h1 className="font-display text-4xl sm:text-5xl font-bold mb-4">
+              Travel <span className="text-gradient-hero">Deals & Offers</span>
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Book hotels, activities, and tours through our trusted partners and save on your next adventure.
+            </p>
+          </div>
+
+          {/* Search & Filters */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search deals by destination or title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {["hotel", "activity", "tour", "package"].map((type) => {
+                const Icon = dealTypeIcons[type];
+                return (
+                  <Button
+                    key={type}
+                    variant={activeFilter === type ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setActiveFilter(activeFilter === type ? null : type)}
+                    className="capitalize"
+                  >
+                    <Icon className="h-4 w-4 mr-1" />
+                    {type}s
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="glass-card rounded-2xl overflow-hidden animate-pulse">
+                  <div className="h-48 bg-muted" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-4 bg-muted rounded w-3/4" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Featured Deals */}
+              {featuredDeals.length > 0 && (
+                <div className="mb-12">
+                  <h2 className="font-display text-2xl font-semibold mb-6 flex items-center gap-2">
+                    <Star className="h-5 w-5 text-sunset fill-sunset" />
+                    Featured Deals
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {featuredDeals.map((deal) => (
+                      <DealCard key={deal.id} deal={deal} onClick={() => handleDealClick(deal)} featured />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* All Deals */}
+              {regularDeals.length > 0 && (
+                <div>
+                  <h2 className="font-display text-2xl font-semibold mb-6">All Deals</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {regularDeals.map((deal) => (
+                      <DealCard key={deal.id} deal={deal} onClick={() => handleDealClick(deal)} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {filteredDeals.length === 0 && (
+                <div className="text-center py-16">
+                  <Compass className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No deals found</h3>
+                  <p className="text-muted-foreground">
+                    Try adjusting your search or filters to find more deals.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Partners Section */}
+          <div className="mt-16 text-center">
+            <p className="text-sm text-muted-foreground mb-4">Trusted Partners</p>
+            <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+              {["Booking.com", "Viator", "GetYourGuide", "Expedia", "Airbnb"].map((partner) => (
+                <span key={partner} className="text-lg font-semibold text-muted-foreground">
+                  {partner}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
+
+interface DealCardProps {
+  deal: AffiliateDeal;
+  onClick: () => void;
+  featured?: boolean;
+}
+
+function DealCard({ deal, onClick, featured }: DealCardProps) {
+  const Icon = dealTypeIcons[deal.deal_type] || Compass;
+  const gradient = dealTypeColors[deal.deal_type] || "from-primary to-accent";
+
+  return (
+    <div
+      className={cn(
+        "glass-card rounded-2xl overflow-hidden hover-lift cursor-pointer group",
+        featured && "ring-2 ring-sunset/30"
+      )}
+      onClick={onClick}
+    >
+      <div className="relative h-48 overflow-hidden">
+        <img
+          src={deal.image_url || "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800"}
+          alt={deal.title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        
+        {/* Badge */}
+        <div className="absolute top-3 left-3">
+          <Badge className={cn("bg-gradient-to-r text-white border-0", gradient)}>
+            <Icon className="h-3 w-3 mr-1" />
+            {deal.deal_type}
+          </Badge>
+        </div>
+
+        {/* Discount */}
+        {deal.discount_text && (
+          <div className="absolute top-3 right-3">
+            <Badge variant="destructive" className="bg-sunset border-0">
+              {deal.discount_text}
+            </Badge>
+          </div>
+        )}
+
+        {/* Partner */}
+        <div className="absolute bottom-3 left-3">
+          <span className="text-xs text-white/80 bg-black/30 px-2 py-1 rounded-full">
+            via {deal.partner?.name}
+          </span>
+        </div>
+      </div>
+
+      <div className="p-5">
+        <h3 className="font-display font-semibold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">
+          {deal.title}
+        </h3>
+        {deal.destination && (
+          <p className="text-sm text-muted-foreground mb-2">{deal.destination}</p>
+        )}
+        {deal.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{deal.description}</p>
+        )}
+
+        <div className="flex items-center justify-between">
+          {deal.price_from && (
+            <div>
+              <span className="text-xs text-muted-foreground">From</span>
+              <p className="font-display font-bold text-lg">
+                {deal.currency} {deal.price_from}
+              </p>
+            </div>
+          )}
+          <Button variant="ghost" size="sm" className="gap-1 text-primary">
+            View Deal
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

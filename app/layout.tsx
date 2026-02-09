@@ -5,9 +5,9 @@ import type { Metadata } from "next";
 
 import SessionProvider from "@/components/SessionProvider";
 import NavBar from "@/app/components/NavBar";
-import { ToastProvider } from "@/app/components/ui/Toast";
-import { ModalProvider } from "@/app/context/ModalContext";
-import SignInModal from "@/app/components/SignInModal";
+import { ToastProvider } from "@/components/ui/Toast";
+import { ModalProvider } from "@/context/ModalContext";
+import SignInModal from "@/components/SignInModal";
 
 import { AuthProvider } from "@/contexts/AuthContext"; // ← NEW
 

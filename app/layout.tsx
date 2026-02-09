@@ -3,13 +3,14 @@ export const dynamic = "force-dynamic";
 import "./globals.css";
 import type { Metadata } from "next";
 
-import SessionProvider from "@/components/SessionProvider";
+// Correct paths based on your folder structure
+import SessionProvider from "@/app/components/SessionProvider";
 import NavBar from "@/app/components/NavBar";
-import { ToastProvider } from "@/components/ui/Toast";
-import { ModalProvider } from "@/context/ModalContext";
-import SignInModal from "@/components/SignInModal";
+import { ToastProvider } from "@/app/components/ui/Toast";
+import { ModalProvider } from "@/app/context/ModalContext";
+import SignInModal from "@/app/components/SignInModal";
 
-import { AuthProvider } from "@/contexts/AuthContext"; // ← NEW
+import { AuthProvider } from "@/app/context/AuthContext"; // corrected path
 
 export const metadata: Metadata = {
   title: "LetsGoPlaces – Calm, Smart Travel Planning",
@@ -25,9 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-black text-white antialiased">
-        {/* NEW: Supabase Auth Provider */}
+        {/* Supabase Auth Provider */}
         <AuthProvider>
-          {/* Existing NextAuth Session Provider */}
+          {/* NextAuth Session Provider */}
           <SessionProvider>
             <ToastProvider>
               <ModalProvider>

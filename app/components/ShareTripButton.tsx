@@ -14,7 +14,7 @@ type Trip = {
   publicId: string | null;
 };
 
-export default function ShareTripButton({ trip }: { trip: Trip }) {
+export default function SaveTripButton({ trip }: { trip: Trip }) {
   const { data: session } = useSession();
   const { showToast } = useToast();
   const { openSignIn } = useModal();

@@ -1,10 +1,10 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useToast } from "@/components/ui/Toast";
-import { useModal } from "@/context/ModalContext";
+import { useToast } from "@/app/components/ui/Toast";
+import { useModal } from "@/app/context/ModalContext";
 import { useRouter } from "next/navigation";
-import ShareTripButton from "@/components/ShareTripButton";
+import ShareTripButton from "@/app/components/ShareTripButton";
 
 // ⭐ Define the Trip type used by this component
 type Trip = {

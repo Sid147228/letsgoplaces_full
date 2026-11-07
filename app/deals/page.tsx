@@ -1,4 +1,4 @@
-import DestinationDeals from "@/components/deals/DestinationDeals";
+import DestinationDeals from "@/app/components/deals/DestinationDeals";
 import { AffiliateBookingCard } from "@/components/affiliate/AffiliateBookingCard";
 
 export default function DealsPage() {

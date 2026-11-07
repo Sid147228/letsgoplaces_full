@@ -10,7 +10,6 @@ import { ToastProvider } from "@/app/components/ui/Toast";
 import { ModalProvider } from "@/app/context/ModalContext";
 import SignInModal from "@/app/components/SignInModal";
 
-import { AuthProvider } from "@/app/context/AuthContext"; // corrected path
 
 export const metadata: Metadata = {
   title: "LetsGoPlaces – Calm, Smart Travel Planning",
@@ -27,7 +26,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="bg-black text-white antialiased">
         {/* Supabase Auth Provider */}
-        <AuthProvider>
           {/* NextAuth Session Provider */}
           <SessionProvider>
             <ToastProvider>
@@ -57,7 +55,6 @@ export default function RootLayout({
               </ModalProvider>
             </ToastProvider>
           </SessionProvider>
-        </AuthProvider>
       </body>
     </html>
   );

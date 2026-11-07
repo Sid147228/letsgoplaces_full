@@ -3,8 +3,8 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useToast } from "@/components/ui/Toast";
-import { useModal } from "@/context/ModalContext";
+import { useToast } from "@/app/components/ui/Toast";
+import { useModal } from "@/app/context/ModalContext";
 
 type TripPayload = {
   destination: string;

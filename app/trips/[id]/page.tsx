@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/authOptions";
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
-import DestinationDeals from "@/components/deals/DestinationDeals";
+import DestinationDeals from "@/app/components/deals/DestinationDeals";
 import { AffiliateBookingCard } from "@/components/affiliate/AffiliateBookingCard";
 
 interface TripPageProps {

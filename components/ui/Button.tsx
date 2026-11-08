@@ -1,12 +1,15 @@
 "use client";
 
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export default function Button({ children, className, ...props }) {
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode };
+
+export default function Button({ children, className, ...props }: Props) {
   return (
     <button
       className={cn(
-        "inline-flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition bg-black text-white hover:bg-gray-900",
+        "inline-flex items-center gap-2 rounded-lg bg-black px-5 py-3 font-medium text-white transition hover:bg-gray-900 disabled:opacity-50",
         className
       )}
       {...props}

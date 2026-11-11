@@ -8,9 +8,6 @@ function validDate(value:unknown):value is string {
   const parsed=new Date(value+"T00:00:00Z");
   return !Number.isNaN(parsed.valueOf())&&parsed.toISOString().slice(0,10)===value;
 }
-function sample(destination:string,length:number,budget:string,pace:string,interests:string):ActivityDay[]{
-  return Array.from({length},(_,index)=>({day:index+1,title:`Day ${index+1} · ${destination}`,morning:"Explore a neighborhood and enjoy breakfast.",afternoon:`Discover a cultural or outdoor attraction${interests?` inspired by ${interests}`:""}.`,evening:`Enjoy a ${budget} dinner and a ${pace} evening.`}));
-}
 function cleanStop(value:unknown):Stop|null{
   if(!value||typeof value!=="object"||Array.isArray(value))return null;
   const s=value as Record<string,unknown>;
@@ -27,6 +24,7 @@ function cleanDay(value:unknown,index:number):ActivityDay|null{
   if(stops.some(stop=>stop===null))return null;
   return {day:index+1,title:String(d.title).trim(),morning:String(d.morning).trim(),afternoon:String(d.afternoon).trim(),evening:String(d.evening).trim(),stops:stops as Stop[]};
 }
+class AeroError extends Error {constructor(public readonly code:string){super(code);this.name="AeroError";}}
 export async function POST(request:Request){
   let body:Record<string,unknown>;
   try{const value:unknown=await request.json();if(!value||typeof value!=="object"||Array.isArray(value))throw Error();body=value as Record<string,unknown>;}
@@ -59,7 +57,7 @@ export async function POST(request:Request){
     if(!record.id)return NextResponse.json({error:"Could not reserve your trip."},{status:502});
     tripId=record.id;
   }
-  if(!key)return NextResponse.json({mode:"sample",destination:place,days:sample(place,length,safeBudget,safePace,safeInterests),notice:"AI generation is not configured."});
+  if(!key)return NextResponse.json({error:"Aero AI is not enabled for this deployment. Check OPENAI_API_KEY for the deployment environment and deploy again.",code:"AI_NOT_CONFIGURED"},{status:503,headers:{"Cache-Control":"no-store"}});
   try{
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),35000);
@@ -79,22 +77,29 @@ export async function POST(request:Request){
         })
       });
     }finally{clearTimeout(timeout);}
-    if(!response.ok)throw Error("AI service unavailable");
+    if(!response.ok){
+      const code=response.status===401?"AI_AUTH_FAILED":response.status===429?"AI_RATE_LIMITED":response.status===404?"AI_MODEL_UNAVAILABLE":"AI_PROVIDER_ERROR";
+      console.error("[Aero] OpenAI request failed",{status:response.status,code,model:process.env.OPENAI_MODEL||"gpt-4o-mini"});
+      throw new AeroError(code);
+    }
     const payload=await response.json() as {choices?:Array<{message?:{content?:string}}>} ;
     const parsed=JSON.parse(payload.choices?.[0]?.message?.content||"{}") as {days?:unknown};
-    if(!Array.isArray(parsed.days)||parsed.days.length!==length)throw Error("Invalid AI response");
+    if(!Array.isArray(parsed.days)||parsed.days.length!==length)throw new AeroError("AI_RESPONSE_INVALID");
     const days=parsed.days.map((day,index)=>cleanDay(day,index));
-    if(days.some(day=>!day))throw Error("Invalid itinerary format");
+    if(days.some(day=>!day))throw new AeroError("AI_RESPONSE_INVALID");
     if(tripId){
       const saved=await rest("trips?id=eq."+encodeURIComponent(tripId),"PATCH","",{itinerary:{days},status:"ready",updated_at:new Date().toISOString()},true);
       if(!saved.ok)return NextResponse.json({error:"Trip generated but could not be saved. Contact support before retrying."},{status:502});
     }
     return NextResponse.json({mode:"ai-unverified",destination:place,days,tripId,notice:"AI suggestions are not verified against live place or route data."});
-  }catch{
+  }catch(cause){
+    const code=cause instanceof AeroError?cause.code:cause instanceof Error&&cause.name==="AbortError"?"AI_TIMEOUT":"AI_REQUEST_FAILED";
+    console.error("[Aero] Itinerary request failed",{code});
     if(tripId){
       await rest("trips?id=eq."+encodeURIComponent(tripId),"PATCH","",{status:"failed",updated_at:new Date().toISOString()},true).catch(()=>{});
       return NextResponse.json({error:"Aero could not generate your trip. Your reservation is retained; contact support to retry."},{status:503});
     }
-    return NextResponse.json({mode:"sample",destination:place,days:sample(place,length,safeBudget,safePace,safeInterests),notice:"AI generation was unavailable. Showing a sample itinerary instead."});
+    const message=code==="AI_AUTH_FAILED"?"Aero cannot authenticate with OpenAI. Verify the API key on this Vercel environment.":code==="AI_RATE_LIMITED"?"Aero has reached an OpenAI usage or billing limit. Check API credits and usage.":code==="AI_MODEL_UNAVAILABLE"?"The configured AI model is unavailable for this API account.":code==="AI_TIMEOUT"?"Aero took too long to generate the itinerary. Try again.":code==="AI_RESPONSE_INVALID"?"Aero returned an incomplete itinerary. Please try again.":"Aero could not generate an itinerary. Please try again or check Vercel function logs.";
+    return NextResponse.json({error:message,code},{status:503,headers:{"Cache-Control":"no-store"}});
   }
 }

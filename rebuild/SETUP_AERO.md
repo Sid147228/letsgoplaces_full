@@ -1,8 +1,8 @@
 # Aero backend setup (preview branch only)
 
 ## Current behavior
-- Without OPENAI_API_KEY, /api/trips returns a **sample** itinerary. Sample previews do not consume a free-trip allowance.
-- With OPENAI_API_KEY but without all Supabase credentials, /api/trips generates **unverified AI** itineraries; these are not persisted and the lifetime allowance is not enforceable.
+- Without OPENAI_API_KEY, /api/trips returns **HTTP 503 AI_NOT_CONFIGURED**, not a fake itinerary.
+- With OPENAI_API_KEY but without all Supabase credentials, /api/trips generates **unverified AI** itineraries; these are not persisted and the lifetime allowance is not enforceable. Provider failures return explicit, safe HTTP 503 errors and a diagnostic code.
 - With OpenAI + Supabase credentials, the API **requires a Supabase access token** in the Authorization: Bearer header and atomically claims one lifetime trip per account. **The current planner UI does not yet sign users in or send this token**. Do not enable all credentials for public users until the sign-in flow is implemented.
 - There is no Google Places verification or map integration yet.
 
@@ -33,3 +33,7 @@ Run `supabase/migrations/20261111_aero_free.sql` in the Supabase SQL editor befo
 6. Verify deployment/build and database migration in the preview environment.
 
 Never configure the production Vercel project from this branch.
+
+## Deployment diagnostics
+
+GET `/api/health` to check `aiConfigured`, `deploymentEnvironment`, `gitBranch`, and `gitSha` without exposing the API key. If this path returns 404, the new code has not been deployed. The `release` marker is `aero-detailed-2026-11-11-r2`. This endpoint reports whether an environment variable exists; it does not prove the key is valid or funded.

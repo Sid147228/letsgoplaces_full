@@ -1,13 +1,13 @@
 # Aero backend setup (preview branch only)
 
 ## Current behavior
-- Without OPENAI_API_KEY, /api/trips returns **HTTP 503 AI_NOT_CONFIGURED**, not a fake itinerary.
-- With OPENAI_API_KEY but without all Supabase credentials, /api/trips generates **unverified AI** itineraries; these are not persisted and the lifetime allowance is not enforceable. Provider failures return explicit, safe HTTP 503 errors and a diagnostic code.
-- With OpenAI + Supabase credentials, the API **requires a Supabase access token** in the Authorization: Bearer header and atomically claims one lifetime trip per account. **The current planner UI does not yet sign users in or send this token**. Do not enable all credentials for public users until the sign-in flow is implemented.
+- Without GEMINI_API_KEY or OPENAI_API_KEY, /api/trips returns **HTTP 503 AI_NOT_CONFIGURED**, not a fake itinerary.
+- With GEMINI_API_KEY or OPENAI_API_KEY but without all Supabase credentials, /api/trips generates **unverified AI** itineraries; these are not persisted and the lifetime allowance is not enforceable. Provider failures return explicit, safe HTTP 503 errors and a diagnostic code.
+- With an AI provider + Supabase credentials, the API **requires a Supabase access token** in the Authorization: Bearer header and atomically claims one lifetime trip per account. **The current planner UI does not yet sign users in or send this token**. Do not enable all credentials for public users until the sign-in flow is implemented.
 - There is no Google Places verification or map integration yet.
 
 ## Server environment variables
-- OPENAI_API_KEY (server only)
+- GEMINI_API_KEY (server only; preferred when configured)\n- GEMINI_MODEL (optional; defaults to gemini-2.5-flash)\n- OPENAI_API_KEY (server only; fallback when Gemini key is absent)
 - OPENAI_MODEL (optional; defaults to gpt-4o-mini)
 - SUPABASE_URL (server only)
 - SUPABASE_ANON_KEY (server only)
@@ -37,3 +37,7 @@ Never configure the production Vercel project from this branch.
 ## Deployment diagnostics
 
 GET `/api/health` to check `aiConfigured`, `deploymentEnvironment`, `gitBranch`, and `gitSha` without exposing the API key. If this path returns 404, the new code has not been deployed. The `release` marker is `aero-detailed-2026-11-11-r2`. This endpoint reports whether an environment variable exists; it does not prove the key is valid or funded.
+
+## Gemini development
+
+Create a Gemini API key in Google AI Studio and add `GEMINI_API_KEY` to the **letsg0places-rebuild-preview** Vercel project, targeting the environment that hosts the rebuild (Production and Preview if both are in use). Redeploy after adding or editing environment variables. With both keys present, Gemini is selected; if Gemini returns an error, Aero reports the error instead of silently charging OpenAI. Gemini's free API quota is not the same as a Google AI Ultra app subscription. `/api/health` lists the active provider and deployment environment without exposing secrets.

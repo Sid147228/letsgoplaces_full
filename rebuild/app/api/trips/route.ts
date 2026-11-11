@@ -1,7 +1,8 @@
 import {authenticate,rest,serviceConfigured,supabaseConfigured} from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 
-type ActivityDay = {day:number;title:string;morning:string;afternoon:string;evening:string};
+type Stop = {time:string;name:string;description:string;area:string;category:string;tip:string;searchQuery:string};
+type ActivityDay = {day:number;title:string;morning:string;afternoon:string;evening:string;stops?:Stop[]};
 function validDate(value:unknown):value is string {
   if(typeof value!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
   const parsed=new Date(value+"T00:00:00Z");
@@ -10,11 +11,21 @@ function validDate(value:unknown):value is string {
 function sample(destination:string,length:number,budget:string,pace:string,interests:string):ActivityDay[]{
   return Array.from({length},(_,index)=>({day:index+1,title:`Day ${index+1} · ${destination}`,morning:"Explore a neighborhood and enjoy breakfast.",afternoon:`Discover a cultural or outdoor attraction${interests?` inspired by ${interests}`:""}.`,evening:`Enjoy a ${budget} dinner and a ${pace} evening.`}));
 }
+function cleanStop(value:unknown):Stop|null{
+  if(!value||typeof value!=="object"||Array.isArray(value))return null;
+  const s=value as Record<string,unknown>;
+  const fields=["time","name","description","area","category","tip","searchQuery"] as const;
+  if(!fields.every(k=>typeof s[k]==="string"&&(s[k] as string).trim().length>0&&(s[k] as string).length<=400))return null;
+  return {time:String(s.time).trim(),name:String(s.name).trim(),description:String(s.description).trim(),area:String(s.area).trim(),category:String(s.category).trim(),tip:String(s.tip).trim(),searchQuery:String(s.searchQuery).trim()};
+}
 function cleanDay(value:unknown,index:number):ActivityDay|null{
   if(!value||typeof value!=="object")return null;
   const d=value as Record<string,unknown>;
   if(!["title","morning","afternoon","evening"].every(key=>typeof d[key]==="string"&&(d[key] as string).trim().length>0&&(d[key] as string).length<=700))return null;
-  return {day:index+1,title:String(d.title).trim(),morning:String(d.morning).trim(),afternoon:String(d.afternoon).trim(),evening:String(d.evening).trim()};
+  if(!Array.isArray(d.stops)||d.stops.length<3||d.stops.length>7)return null;
+  const stops=d.stops.map(cleanStop);
+  if(stops.some(stop=>stop===null))return null;
+  return {day:index+1,title:String(d.title).trim(),morning:String(d.morning).trim(),afternoon:String(d.afternoon).trim(),evening:String(d.evening).trim(),stops:stops as Stop[]};
 }
 export async function POST(request:Request){
   let body:Record<string,unknown>;
@@ -51,7 +62,7 @@ export async function POST(request:Request){
   if(!key)return NextResponse.json({mode:"sample",destination:place,days:sample(place,length,safeBudget,safePace,safeInterests),notice:"AI generation is not configured."});
   try{
     const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),18000);
+    const timeout=setTimeout(()=>controller.abort(),35000);
     let response:Response;
     try{
       response=await fetch("https://api.openai.com/v1/chat/completions",{
@@ -59,10 +70,10 @@ export async function POST(request:Request){
         headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json"},
         body:JSON.stringify({
           model:process.env.OPENAI_MODEL||"gpt-4o-mini",
-          temperature:0.5,
+          temperature:0.4,
           response_format:{type:"json_object"},
           messages:[
-            {role:"system",content:"You are Aero, a practical travel itinerary assistant. Return ONLY a JSON object with a days array. Each day must have title, morning, afternoon, evening as concise, useful strings. Do not claim opening hours, exact prices, travel times, or availability are verified. Do not invent exact addresses. Prefer well-known attractions and realistic geographic groupings. Make each day distinct. No markdown."},
+            {role:"system",content:"You are Aero, a thoughtful travel planner. Output ONLY a JSON object with a days array, exactly one day for each requested date. Each day requires title, morning, afternoon, evening (short summaries), plus stops (3 to 5 chronologically ordered activity objects). Every stop requires time (suggested HH:MM), name (specific real landmark, neighborhood or attraction; no fabricated business names), description (2 practical sentences on what to see/do), area (neighborhood), category (Food, Culture, Nature, Sightseeing, Shopping or Experience), tip (one useful practical consideration without unsupported claims), searchQuery (precise place and city for Google Maps search). Make each day geographically coherent and distinct. Adapt to pace, interests and budget. Avoid impossible logistics. Do not claim live opening hours, exact prices, live availability, or transit duration. If unsure of a specific business, suggest a well-known neighborhood instead. No markdown."},
             {role:"user",content:JSON.stringify({destination:place,startDate,endDate,numberOfDays:length,travelers:safeTravelers,budget:safeBudget,pace:safePace,interests:safeInterests})}
           ]
         })

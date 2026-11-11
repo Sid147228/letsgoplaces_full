@@ -1,3 +1,4 @@
+import {authenticate,rest,serviceConfigured,supabaseConfigured} from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 
 type ActivityDay = {day:number;title:string;morning:string;afternoon:string;evening:string};
@@ -29,6 +30,24 @@ export async function POST(request:Request){
   const safeTravelers=typeof travelers==="number"&&Number.isInteger(travelers)&&travelers>=1&&travelers<=12?travelers:2;
   const place=destination.trim();
   const key=process.env.OPENAI_API_KEY;
+  // Only live AI trips consume the lifetime allowance; preview samples do not.
+  const persistentMode=Boolean(key)&&supabaseConfigured()&&serviceConfigured();
+  let tripId:string|undefined;
+  if(persistentMode){
+    let auth;
+    try{auth=await authenticate(request);}catch{return NextResponse.json({error:"Authentication temporarily unavailable."},{status:503});}
+    if(!auth)return NextResponse.json({error:"Sign in to claim your one free trip."},{status:401});
+    let claimed:Response;
+    try{claimed=await rest("rpc/claim_free_trip","POST",auth.token,{p_destination:place,p_start_date:startDate,p_end_date:endDate,p_travelers:safeTravelers,p_budget:safeBudget,p_pace:safePace,p_interests:safeInterests});}
+    catch{return NextResponse.json({error:"Trip storage temporarily unavailable."},{status:503});}
+    if(!claimed.ok){
+      const detail=await claimed.json().catch(()=>({})) as {code?:string};
+      return NextResponse.json({error:detail.code==="23505"?"Your lifetime Aero Free trip has already been used.":"Could not reserve your free trip."},{status:detail.code==="23505"?409:502});
+    }
+    const record=await claimed.json() as {id?:string};
+    if(!record.id)return NextResponse.json({error:"Could not reserve your trip."},{status:502});
+    tripId=record.id;
+  }
   if(!key)return NextResponse.json({mode:"sample",destination:place,days:sample(place,length,safeBudget,safePace,safeInterests),notice:"AI generation is not configured."});
   try{
     const controller=new AbortController();
@@ -55,8 +74,16 @@ export async function POST(request:Request){
     if(!Array.isArray(parsed.days)||parsed.days.length!==length)throw Error("Invalid AI response");
     const days=parsed.days.map((day,index)=>cleanDay(day,index));
     if(days.some(day=>!day))throw Error("Invalid itinerary format");
-    return NextResponse.json({mode:"ai-unverified",destination:place,days,notice:"AI suggestions are not verified against live place or route data."});
+    if(tripId){
+      const saved=await rest("trips?id=eq."+encodeURIComponent(tripId),"PATCH","",{itinerary:{days},status:"ready",updated_at:new Date().toISOString()},true);
+      if(!saved.ok)return NextResponse.json({error:"Trip generated but could not be saved. Contact support before retrying."},{status:502});
+    }
+    return NextResponse.json({mode:"ai-unverified",destination:place,days,tripId,notice:"AI suggestions are not verified against live place or route data."});
   }catch{
+    if(tripId){
+      await rest("trips?id=eq."+encodeURIComponent(tripId),"PATCH","",{status:"failed",updated_at:new Date().toISOString()},true).catch(()=>{});
+      return NextResponse.json({error:"Aero could not generate your trip. Your reservation is retained; contact support to retry."},{status:503});
+    }
     return NextResponse.json({mode:"sample",destination:place,days:sample(place,length,safeBudget,safePace,safeInterests),notice:"AI generation was unavailable. Showing a sample itinerary instead."});
   }
 }

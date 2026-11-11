@@ -14,3 +14,19 @@
 
 /* Detailed Aero itinerary timeline */
 .aero-stops{display:grid;gap:0;margin-top:20px}.aero-stop{display:grid;grid-template-columns:85px minmax(0,1fr);gap:22px;position:relative;padding:0 0 30px}.aero-stop:not(:last-child):before{content:"";position:absolute;left:80px;top:23px;bottom:0;border-left:1px solid #dce8df}.aero-stop-time{font-size:12px;font-weight:800;color:#32745b;padding-top:5px;letter-spacing:.5px}.aero-stop-content{position:relative;padding-left:20px}.aero-stop-content:before{content:"";position:absolute;left:-11px;top:7px;width:9px;height:9px;background:#367b63;border:3px solid #e7f1e9;border-radius:50%;z-index:1}.aero-stop-category{color:#6b8978;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}.aero-stop-content h3{font-family:'Playfair Display',Georgia,serif;font-size:23px;font-weight:500;letter-spacing:-.4px;margin:8px 0 10px;color:#233c31}.aero-stop-content p{color:#5f7166;font-size:14px;line-height:1.8;margin:0 0 13px}.aero-stop-tip{font-size:12px;line-height:1.7;color:#58715e;background:#f1f6ef;padding:12px 15px;border-radius:10px;margin-bottom:12px}.aero-stop-tip strong{color:#2e684e;margin-right:5px}.aero-map-link{color:#28664f;font-weight:800;font-size:12px;text-decoration:underline;text-underline-offset:3px}.aero-map-link:hover{color:#153e2c}@media(max-width:650px){.aero-stop{grid-template-columns:54px minmax(0,1fr);gap:12px}.aero-stop:not(:last-child):before{left:56px}.aero-stop-content{padding-left:13px}.aero-stop-content:before{left:-5px}.aero-stop-content h3{font-size:20px}.aero-stop-time{font-size:11px}}
+
+
+/* Itinerary utilities and printable output */
+.itinerary-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 22px}.itinerary-tool{border:1px solid #d6e4d9;color:#285b47;background:#fff;border-radius:30px;padding:11px 17px;font-size:12px;font-weight:800;cursor:pointer}.itinerary-tool:hover{background:#f1f7f1}.itinerary-copy-status{font-size:12px;color:#396b54}
+@media print{
+  @page{size:A4;margin:14mm}
+  body,.planner-page{background:#fff!important;color:#111!important}
+  .site-header,.itinerary-toolbar,.result-actions,.aero-map-link,.planner-home{display:none!important}
+  .planner-shell{max-width:none;padding:0;margin:0}
+  .itinerary-view>h1{font-size:32px;margin:0 0 10px}
+  .itinerary-day{box-shadow:none!important;break-inside:avoid;border:1px solid #ddd;margin-bottom:15px;padding:16px}
+  .itinerary-day-heading h2{font-size:22px}
+  .aero-stop{break-inside:avoid;padding-bottom:14px}
+  .aero-stop-content p{line-height:1.5}
+  .preview-notice{background:#fff!important;border:1px solid #ddd;padding:10px}
+}

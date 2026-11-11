@@ -1,3 +1,4 @@
+import {configuredProvider,generateItineraryJson,AiProviderError} from "@/lib/ai-provider";
 import {authenticate,rest,serviceConfigured,supabaseConfigured} from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 
@@ -24,7 +25,6 @@ function cleanDay(value:unknown,index:number):ActivityDay|null{
   if(stops.some(stop=>stop===null))return null;
   return {day:index+1,title:String(d.title).trim(),morning:String(d.morning).trim(),afternoon:String(d.afternoon).trim(),evening:String(d.evening).trim(),stops:stops as Stop[]};
 }
-class AeroError extends Error {constructor(public readonly code:string){super(code);this.name="AeroError";}}
 export async function POST(request:Request){
   let body:Record<string,unknown>;
   try{const value:unknown=await request.json();if(!value||typeof value!=="object"||Array.isArray(value))throw Error();body=value as Record<string,unknown>;}
@@ -38,9 +38,9 @@ export async function POST(request:Request){
   const safeInterests=typeof interests==="string"?interests.slice(0,250):"";
   const safeTravelers=typeof travelers==="number"&&Number.isInteger(travelers)&&travelers>=1&&travelers<=12?travelers:2;
   const place=destination.trim();
-  const key=process.env.OPENAI_API_KEY;
+  const provider=configuredProvider();
   // Only live AI trips consume the lifetime allowance; preview samples do not.
-  const persistentMode=Boolean(key)&&supabaseConfigured()&&serviceConfigured();
+  const persistentMode=Boolean(provider)&&supabaseConfigured()&&serviceConfigured();
   let tripId:string|undefined;
   if(persistentMode){
     let auth;
@@ -57,49 +57,26 @@ export async function POST(request:Request){
     if(!record.id)return NextResponse.json({error:"Could not reserve your trip."},{status:502});
     tripId=record.id;
   }
-  if(!key)return NextResponse.json({error:"Aero AI is not enabled for this deployment. Check OPENAI_API_KEY for the deployment environment and deploy again.",code:"AI_NOT_CONFIGURED"},{status:503,headers:{"Cache-Control":"no-store"}});
+  if(!provider)return NextResponse.json({error:"Aero AI is not enabled for this deployment. Add GEMINI_API_KEY to the correct Vercel project and deployment environment.",code:"AI_NOT_CONFIGURED"},{status:503,headers:{"Cache-Control":"no-store"}});
   try{
-    const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),35000);
-    let response:Response;
-    try{
-      response=await fetch("https://api.openai.com/v1/chat/completions",{
-        method:"POST",signal:controller.signal,
-        headers:{"Authorization":`Bearer ${key}`,"Content-Type":"application/json"},
-        body:JSON.stringify({
-          model:process.env.OPENAI_MODEL||"gpt-4o-mini",
-          temperature:0.4,
-          response_format:{type:"json_object"},
-          messages:[
-            {role:"system",content:"You are Aero, a thoughtful travel planner. Output ONLY a JSON object with a days array, exactly one day for each requested date. Each day requires title, morning, afternoon, evening (short summaries), plus stops (3 to 5 chronologically ordered activity objects). Every stop requires time (suggested HH:MM), name (specific real landmark, neighborhood or attraction; no fabricated business names), description (2 practical sentences on what to see/do), area (neighborhood), category (Food, Culture, Nature, Sightseeing, Shopping or Experience), tip (one useful practical consideration without unsupported claims), searchQuery (precise place and city for Google Maps search). Make each day geographically coherent and distinct. Adapt to pace, interests and budget. Avoid impossible logistics. Do not claim live opening hours, exact prices, live availability, or transit duration. If unsure of a specific business, suggest a well-known neighborhood instead. No markdown."},
-            {role:"user",content:JSON.stringify({destination:place,startDate,endDate,numberOfDays:length,travelers:safeTravelers,budget:safeBudget,pace:safePace,interests:safeInterests})}
-          ]
-        })
-      });
-    }finally{clearTimeout(timeout);}
-    if(!response.ok){
-      const code=response.status===401?"AI_AUTH_FAILED":response.status===429?"AI_RATE_LIMITED":response.status===404?"AI_MODEL_UNAVAILABLE":"AI_PROVIDER_ERROR";
-      console.error("[Aero] OpenAI request failed",{status:response.status,code,model:process.env.OPENAI_MODEL||"gpt-4o-mini"});
-      throw new AeroError(code);
-    }
-    const payload=await response.json() as {choices?:Array<{message?:{content?:string}}>} ;
-    const parsed=JSON.parse(payload.choices?.[0]?.message?.content||"{}") as {days?:unknown};
-    if(!Array.isArray(parsed.days)||parsed.days.length!==length)throw new AeroError("AI_RESPONSE_INVALID");
+    const raw=await generateItineraryJson("You are Aero, a thoughtful travel planner. Output ONLY a JSON object with a days array, exactly one day for each requested date. Each day requires title, morning, afternoon, evening (short summaries), plus stops (3 to 5 chronologically ordered activity objects). Every stop requires time (suggested HH:MM), name (specific real landmark, neighborhood or attraction; no fabricated business names), description (2 practical sentences on what to see/do), area (neighborhood), category (Food, Culture, Nature, Sightseeing, Shopping or Experience), tip (one useful practical consideration without unsupported claims), searchQuery (precise place and city for Google Maps search). Make each day geographically coherent and distinct. Adapt to pace, interests and budget. Avoid impossible logistics. Do not claim live opening hours, exact prices, live availability, or transit duration. If unsure of a specific business, suggest a well-known neighborhood instead. No markdown.",{destination:place,startDate,endDate,numberOfDays:length,travelers:safeTravelers,budget:safeBudget,pace:safePace,interests:safeInterests});
+    const parsed=JSON.parse(raw) as {days?:unknown};
+    if(!Array.isArray(parsed.days)||parsed.days.length!==length)throw new AiProviderError("AI_RESPONSE_INVALID",provider);
     const days=parsed.days.map((day,index)=>cleanDay(day,index));
     if(days.some(day=>!day))throw new AeroError("AI_RESPONSE_INVALID");
     if(tripId){
       const saved=await rest("trips?id=eq."+encodeURIComponent(tripId),"PATCH","",{itinerary:{days},status:"ready",updated_at:new Date().toISOString()},true);
       if(!saved.ok)return NextResponse.json({error:"Trip generated but could not be saved. Contact support before retrying."},{status:502});
     }
-    return NextResponse.json({mode:"ai-unverified",destination:place,days,tripId,notice:"AI suggestions are not verified against live place or route data."});
+    return NextResponse.json({mode:"ai-unverified",provider,destination:place,days,tripId,notice:"AI suggestions are not verified against live place or route data."});
   }catch(cause){
-    const code=cause instanceof AeroError?cause.code:cause instanceof Error&&cause.name==="AbortError"?"AI_TIMEOUT":"AI_REQUEST_FAILED";
-    console.error("[Aero] Itinerary request failed",{code});
+    const code=cause instanceof AiProviderError?cause.code:"AI_REQUEST_FAILED";
+    console.error("[Aero] Itinerary request failed",{code,provider});
     if(tripId){
       await rest("trips?id=eq."+encodeURIComponent(tripId),"PATCH","",{status:"failed",updated_at:new Date().toISOString()},true).catch(()=>{});
       return NextResponse.json({error:"Aero could not generate your trip. Your reservation is retained; contact support to retry."},{status:503});
     }
-    const message=code==="AI_AUTH_FAILED"?"Aero cannot authenticate with OpenAI. Verify the API key on this Vercel environment.":code==="AI_RATE_LIMITED"?"Aero has reached an OpenAI usage or billing limit. Check API credits and usage.":code==="AI_MODEL_UNAVAILABLE"?"The configured AI model is unavailable for this API account.":code==="AI_TIMEOUT"?"Aero took too long to generate the itinerary. Try again.":code==="AI_RESPONSE_INVALID"?"Aero returned an incomplete itinerary. Please try again.":"Aero could not generate an itinerary. Please try again or check Vercel function logs.";
+    const message=code==="AI_AUTH_FAILED"?"Aero cannot authenticate with the selected AI provider. Verify the API key in Vercel.":code==="AI_RATE_LIMITED"?"The selected AI provider has reached a quota or rate limit. Check its API usage limits.":code==="AI_MODEL_UNAVAILABLE"?"The configured AI model is unavailable for this API project.":code==="AI_TIMEOUT"?"Aero took too long to generate the itinerary. Try again.":code==="AI_RESPONSE_INVALID"?"Aero returned an incomplete itinerary. Please try again.":"Aero could not generate an itinerary. Please try again or check Vercel function logs.";
     return NextResponse.json({error:message,code},{status:503,headers:{"Cache-Control":"no-store"}});
   }
 }

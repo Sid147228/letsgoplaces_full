@@ -41,3 +41,14 @@ GET `/api/health` to check `aiConfigured`, `deploymentEnvironment`, `gitBranch`,
 ## Gemini development
 
 Create a Gemini API key in Google AI Studio and add `GEMINI_API_KEY` to the **letsg0places-rebuild-preview** Vercel project, targeting the environment that hosts the rebuild (Production and Preview if both are in use). Redeploy after adding or editing environment variables. With both keys present, Gemini is selected; if Gemini returns an error, Aero reports the error instead of silently charging OpenAI. Gemini's free API quota is not the same as a Google AI Ultra app subscription. `/api/health` lists the active provider and deployment environment without exposing secrets.
+
+## Account implementation added 12 Nov 2026
+
+- Added `@supabase/supabase-js` browser auth, a passwordless email sign-in component and session-based requests.
+- Environment variables required for browser: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (public anon key, NEVER a service role key).
+- Environment variables required on server: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only).
+- Enable email OTP/magic-link and allow the rebuild preview URL and `/plan` as redirect destinations in the dedicated Supabase Auth project.
+- Apply both migrations in order: `20261111_aero_free.sql`, `20261112_aero_one_edit.sql` on a **dedicated rebuild Supabase project**. The pre-existing `letsgoplaces` Supabase project is inactive and was NOT modified.
+- The one-edit RPC uses atomic conditional UPDATE so concurrent edit attempts cannot each claim a free edit. Failed generation currently consumes the edit; implement safe provider-error recovery before public launch.
+- Account switches clear cached trip data in the browser. Auth and saved trips have NOT been tested against a running Supabase instance yet.
+- Vercel `GEMINI_API_KEY` is now detected for Production in the rebuild project as of 12 Nov; the application still needs the next deployment and runtime testing.

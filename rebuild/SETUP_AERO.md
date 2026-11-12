@@ -21,7 +21,7 @@ Run `supabase/migrations/20261111_aero_free.sql` in the Supabase SQL editor befo
 - RLS permits users to read their own trips, not to write trip status or AI output.
 - Only the server uses the service-role credential to save generated output.
 - The 3-day limit is validated in both API and database.
-- One AI edit is **not yet implemented**.
+- One AI edit is implemented in the rebuild backend/UI but is **not live until the Supabase migration and credentials are configured**.
 - A failed AI generation currently leaves the trip reserved as failed, rather than silently allowing extra attempts. Recovery tooling is still required before launch.
 
 ## Remaining launch blockers
@@ -49,6 +49,10 @@ Create a Gemini API key in Google AI Studio and add `GEMINI_API_KEY` to the **le
 - Environment variables required on server: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server only).
 - Enable email OTP/magic-link and allow the rebuild preview URL and `/plan` as redirect destinations in the dedicated Supabase Auth project.
 - Apply both migrations in order: `20261111_aero_free.sql`, `20261112_aero_one_edit.sql` on a **dedicated rebuild Supabase project**. The pre-existing `letsgoplaces` Supabase project is inactive and was NOT modified.
-- The one-edit RPC uses atomic conditional UPDATE so concurrent edit attempts cannot each claim a free edit. Failed generation currently consumes the edit; implement safe provider-error recovery before public launch.
+- The one-edit RPC uses atomic conditional UPDATE so concurrent edit attempts cannot each claim a free edit. Failed edit generations now reset to `failed` and can be retried (maximum 3 provider attempts); permanent errors that prevent resetting the lock still require support.
 - Account switches clear cached trip data in the browser. Auth and saved trips have NOT been tested against a running Supabase instance yet.
 - Vercel `GEMINI_API_KEY` is now detected for Production in the rebuild project as of 12 Nov; the application still needs the next deployment and runtime testing.
+
+## Development release checkpoint
+
+Latest Supabase integration includes passwordless email login, owner-only saved-trip retrieval, one lifetime trip claim and one successful AI edit with at most three total edit-generation attempts. These features were committed only to `rebuild/clean-mvp`; **no database migration has been applied** to the inactive legacy `letsgoplaces` Supabase project. Before public activation, create/choose a dedicated rebuild Supabase project, run both migrations, set the public anon and server-only service credentials, configure Auth redirect allowlists, and perform integration and concurrency tests. Never share service role keys in browser variables.

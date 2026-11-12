@@ -49,9 +49,12 @@ export default function Planner() {
     try{
       const response=await fetch("/api/trips/edit",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({tripId:result.tripId,instruction:editInstruction})});
       const payload=await response.json() as Trip & {error?:string};
-      if(!response.ok)throw Error(payload.error||"Could not edit the itinerary.");
+      if(!response.ok){
+        if(response.status===409||payload.error?.includes("reservation is retained"))setEditUsed(true);
+        throw Error(payload.error||"Could not edit the itinerary.");
+      }
       setResult(payload);setEditInstruction("");setEditUsed(true);
-    }catch(e){setEditError(e instanceof Error?e.message:"Could not complete the edit.");setEditUsed(true);}
+    }catch(e){setEditError(e instanceof Error?e.message:"Could not complete the edit. Check your saved trip before retrying.");}
     finally{setEditBusy(false);}
   }
   async function copyItinerary(){

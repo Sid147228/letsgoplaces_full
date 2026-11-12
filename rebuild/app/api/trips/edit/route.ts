@@ -48,7 +48,7 @@ export async function POST(request:Request){
     if(!Array.isArray(parsed.days)||parsed.days.length!==trip.itinerary.days.length)throw Error("Invalid day count");
     const days=parsed.days.map(validateDay);
     if(days.some(day=>!day))throw Error("Invalid day structure");
-    const saved=await rest("trips?id=eq."+encodeURIComponent(tripId),"PATCH","",{itinerary:{days},updated_at:new Date().toISOString()},true);
+    const saved=await rest("trips?id=eq."+encodeURIComponent(tripId),"PATCH","",{itinerary:{days},edit_state:"completed",updated_at:new Date().toISOString()},true);
     if(!saved.ok)throw Error("Save failed");
     return NextResponse.json({destination:trip.destination,days,mode:"ai-unverified",tripId,notice:"One Aero Free edit used. Verify activity details before visiting."},{headers:{"Cache-Control":"no-store"}});
   }catch(e){

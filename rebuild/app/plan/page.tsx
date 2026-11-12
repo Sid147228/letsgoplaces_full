@@ -1,5 +1,5 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useCallback, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import type {Session} from "@supabase/supabase-js";
 import AeroAuth from "@/components/aero-auth";
@@ -31,6 +31,15 @@ export default function Planner() {
   const [editBusy,setEditBusy]=useState(false);
   const [editUsed,setEditUsed]=useState(false);
   const [editError,setEditError]=useState("");
+  const currentUserId=useRef<string|null>(null);
+  const handleSession=useCallback((next:Session|null)=>{
+    const userId=next?.user.id||null;
+    if(currentUserId.current!==userId){
+      currentUserId.current=userId;
+      setSavedTrips([]);setSavedError("");setResult(null);setEditUsed(false);setEditError("");
+    }
+    setSession(next);
+  },[]);
   const days=dayCount(startDate,endDate);
   function next(){setError("");if(step===1){if(!destination.trim()||!startDate||!endDate||days<1){setError("Enter your destination and valid travel dates.");return;}if(days>3){setError("Aero Free supports trips of up to 3 days. Aero Plus is coming soon.");return;}}setStep(Math.min(3,step+1));}
   function toggleInterest(item:string){setInterests(old=>old.includes(item)?old.filter(x=>x!==item):[...old,item]);}
@@ -82,7 +91,7 @@ export default function Planner() {
     <header className="site-header"><div className="shell header-inner"><Link href="/" className="brand"><span className="brand-symbol">✳</span>lets<span className="brand-accent">g0</span>places<span className="brand-period">.</span></Link><Link href="/" className="planner-home">← Back to home</Link></div></header>
     <main className="planner-shell">
       {!result?<><div className="planner-intro"><span className="planner-eyebrow">✦ MEET AERO, YOUR TRAVEL COMPANION</span><h1>A great trip starts <em>here.</em></h1><p>A few details, and we'll help you shape your next getaway.</p></div>
-        <AeroAuth onSession={setSession}/>{session&&<div className="saved-trip-controls"><button type="button" onClick={loadSavedTrips}>View saved trips</button>{savedError&&<span role="alert">{savedError}</span>}{savedTrips.map(trip=><button key={trip.id} type="button" disabled={!trip.itinerary?.days?.length} onClick={()=>{if(trip.itinerary?.days){setResult({destination:trip.destination,days:trip.itinerary.days,mode:"ai-unverified",tripId:trip.id,notice:"Previously saved AI itinerary; places and opening hours are not live-verified."});setEditUsed((trip.ai_edits_used||0)>=1);setEditError("");}}}>{trip.destination} · {trip.status}</button>)}</div>}<div className="planner-progress"><span>YOUR TRIP, YOUR WAY</span><span>STEP {step} OF 3</span></div><div className="planner-progress-track"><div style={{width:`${step/3*100}%`}}/></div>
+        <AeroAuth onSession={handleSession}/>{session&&<div className="saved-trip-controls"><button type="button" onClick={loadSavedTrips}>View saved trips</button>{savedError&&<span role="alert">{savedError}</span>}{savedTrips.map(trip=><button key={trip.id} type="button" disabled={!trip.itinerary?.days?.length} onClick={()=>{if(trip.itinerary?.days){setResult({destination:trip.destination,days:trip.itinerary.days,mode:"ai-unverified",tripId:trip.id,notice:"Previously saved AI itinerary; places and opening hours are not live-verified."});setEditUsed((trip.ai_edits_used||0)>=1);setEditError("");}}}>{trip.destination} · {trip.status}</button>)}</div>}<div className="planner-progress"><span>YOUR TRIP, YOUR WAY</span><span>STEP {step} OF 3</span></div><div className="planner-progress-track"><div style={{width:`${step/3*100}%`}}/></div>
         <form onSubmit={submit} className="planner-panel">
           {step===1&&<><div className="planner-step-label">01 / THE ESSENTIALS</div><h2>Where are we taking you?</h2><p className="planner-step-desc">Start with a destination and your travel dates.</p><div className="planner-fields"><div className="planner-field full"><label htmlFor="destination">Where would you like to go?</label><input id="destination" value={destination} onChange={e=>setDestination(e.target.value)} placeholder="e.g. Lisbon, Portugal" maxLength={120} required/></div><div className="planner-field"><label htmlFor="start">Arriving</label><input id="start" type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} required/></div><div className="planner-field"><label htmlFor="end">Leaving</label><input id="end" type="date" min={startDate||undefined} value={endDate} onChange={e=>setEndDate(e.target.value)} required/></div><div className="planner-field full"><label htmlFor="travelers">How many travelers?</label><select id="travelers" value={travelers} onChange={e=>setTravelers(Number(e.target.value))}>{Array.from({length:12},(_,i)=><option key={i+1} value={i+1}>{i+1} {i===0?"traveler":"travelers"}</option>)}</select></div></div><div className="planner-hint">✧ Aero Free includes one trip of up to 3 days.</div></>}
           {step===2&&<><div className="planner-step-label">02 / YOUR TRAVEL STYLE</div><h2>What feels like your kind of trip?</h2><p className="planner-step-desc">We'll shape the itinerary around your budget and preferred pace.</p><div className="planner-fields"><div className="planner-field full"><label htmlFor="budget">Your budget style</label><select id="budget" value={budget} onChange={e=>setBudget(e.target.value)}><option value="budget">Budget-friendly — make every penny count</option><option value="moderate">Comfortable — a little of everything</option><option value="luxury">Luxury — treat yourself</option></select></div><div className="planner-field full"><label htmlFor="pace">Your ideal pace</label><select id="pace" value={pace} onChange={e=>setPace(e.target.value)}><option value="relaxed">Relaxed — plenty of breathing room</option><option value="balanced">Balanced — a little of both</option><option value="active">Active — make the most of every day</option></select></div></div></>}

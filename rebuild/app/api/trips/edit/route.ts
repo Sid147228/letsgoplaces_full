@@ -53,6 +53,8 @@ export async function POST(request:Request){
     return NextResponse.json({destination:trip.destination,days,mode:"ai-unverified",tripId,notice:"One Aero Free edit used. Verify activity details before visiting."},{headers:{"Cache-Control":"no-store"}});
   }catch(e){
     console.error("[Aero] Free edit failed",{code:e instanceof AiProviderError?e.code:"EDIT_FAILED"});
-    return NextResponse.json({error:"Aero couldn't complete the edit. Your edit reservation is retained; support-assisted recovery is needed."},{status:503});
+    const reset=await rest("trips?id=eq."+encodeURIComponent(tripId)+"&edit_state=eq.in_progress","PATCH","",{edit_state:"failed",updated_at:new Date().toISOString()},true).catch(()=>null);
+    if(!reset?.ok)return NextResponse.json({error:"Aero couldn't complete the edit and couldn't release the retry lock. Contact support."},{status:503});
+    return NextResponse.json({error:"Aero couldn't complete your edit. You can retry up to three provider attempts without using an extra edit.",retryAllowed:true},{status:503});
   }
 }

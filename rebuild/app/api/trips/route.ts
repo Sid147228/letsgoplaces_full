@@ -63,7 +63,7 @@ export async function POST(request:Request){
     const parsed=JSON.parse(raw) as {days?:unknown};
     if(!Array.isArray(parsed.days)||parsed.days.length!==length)throw new AiProviderError("AI_RESPONSE_INVALID",provider);
     const days=parsed.days.map((day,index)=>cleanDay(day,index));
-    if(days.some(day=>!day))throw new AeroError("AI_RESPONSE_INVALID");
+    if(days.some(day=>!day))throw new AiProviderError("AI_RESPONSE_INVALID",provider);
     if(tripId){
       const saved=await rest("trips?id=eq."+encodeURIComponent(tripId),"PATCH","",{itinerary:{days},status:"ready",updated_at:new Date().toISOString()},true);
       if(!saved.ok)return NextResponse.json({error:"Trip generated but could not be saved. Contact support before retrying."},{status:502});

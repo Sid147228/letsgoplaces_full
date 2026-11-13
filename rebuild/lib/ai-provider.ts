@@ -13,7 +13,7 @@ export function configuredProvider():Provider|null {
   return null;
 }
 export function modelName(provider:Provider):string {
-  return provider==="gemini" ? (process.env.GEMINI_MODEL||"gemini-2.5-flash") : (process.env.OPENAI_MODEL||"gpt-4o-mini");
+  return provider==="gemini" ? (process.env.GEMINI_MODEL||"gemini-3.5-flash-lite") : (process.env.OPENAI_MODEL||"gpt-4o-mini");
 }
 function errorCode(status:number):AiFailureCode {
   return status===401||status===403?"AI_AUTH_FAILED":status===429?"AI_RATE_LIMITED":status===404?"AI_MODEL_UNAVAILABLE":"AI_PROVIDER_ERROR";
@@ -24,19 +24,28 @@ export async function generateItineraryJson(system:string,details:unknown):Promi
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),45000);
   try {
-    const model=modelName(provider);
+    let model=modelName(provider);
     let response:Response;
     if(provider==="gemini") {
-      const url="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
-      response=await fetch(url,{
-        method:"POST",signal:controller.signal,cache:"no-store",
-        headers:{"Content-Type":"application/json","x-goog-api-key":process.env.GEMINI_API_KEY!},
-        body:JSON.stringify({
-          systemInstruction:{parts:[{text:system}]},
-          contents:[{role:"user",parts:[{text:JSON.stringify(details)}]}],
-          generationConfig:{responseMimeType:"application/json",temperature:0.4,maxOutputTokens:8192}
-        })
+      const requestBody=JSON.stringify({
+        systemInstruction:{parts:[{text:system}]},
+        contents:[{role:"user",parts:[{text:JSON.stringify(details)}]}],
+        generationConfig:{responseMimeType:"application/json",temperature:0.4,maxOutputTokens:8192}
       });
+      const callGemini=(name:string)=>fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(name)+":generateContent",
+        {method:"POST",signal:controller.signal,cache:"no-store",
+          headers:{"Content-Type":"application/json","x-goog-api-key":process.env.GEMINI_API_KEY!},
+          body:requestBody}
+      );
+      response=await callGemini(model);
+      // Legacy 2.5 and some newer models can respond 404 for recently created projects.
+      // Only retry a model-not-found response, never authentication, billing or quota failures.
+      if(response.status===404&&model!=="gemini-3.8-flash") {
+        console.warn("[Aero] Gemini model unavailable, trying supported alternative",{model,status:404});
+        model="gemini-3.8-flash";
+        response=await callGemini(model);
+      }
     } else {
       response=await fetch("https://api.openai.com/v1/chat/completions",{
         method:"POST",signal:controller.signal,cache:"no-store",

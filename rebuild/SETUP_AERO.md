@@ -7,7 +7,7 @@
 - There is no Google Places verification or map integration yet.
 
 ## Server environment variables
-- GEMINI_API_KEY (server only; preferred when configured)\n- GEMINI_MODEL (optional; defaults to gemini-2.5-flash)\n- OPENAI_API_KEY (server only; fallback when Gemini key is absent)
+- GEMINI_API_KEY (server only; preferred when configured)\n- GEMINI_MODEL (optional; defaults to gemini-3.5-flash-lite)\n- OPENAI_API_KEY (server only; fallback when Gemini key is absent)
 - OPENAI_MODEL (optional; defaults to gpt-4o-mini)
 - SUPABASE_URL (server only)
 - SUPABASE_ANON_KEY (server only)
@@ -56,3 +56,6 @@ Create a Gemini API key in Google AI Studio and add `GEMINI_API_KEY` to the **le
 ## Development release checkpoint
 
 Latest Supabase integration includes passwordless email login, owner-only saved-trip retrieval, one lifetime trip claim and one successful AI edit with at most three total edit-generation attempts. These features were committed only to `rebuild/clean-mvp`; **no database migration has been applied** to the inactive legacy `letsgoplaces` Supabase project. Before public activation, create/choose a dedicated rebuild Supabase project, run both migrations, set the public anon and server-only service credentials, configure Auth redirect allowlists, and perform integration and concurrency tests. Never share service role keys in browser variables.
+
+### Gemini model availability (November 2026)
+New Gemini API projects may receive HTTP 404 for Gemini 2.5 models. Aero defaults to `gemini-3.5-flash-lite` and retries `gemini-3.8-flash` only when the primary model returns 404. `GEMINI_MODEL` can override the primary model; check current account entitlements and free-tier quotas independently. The preview project is separate from the legacy production project.

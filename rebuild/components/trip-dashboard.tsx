@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useState, type ReactNode} from "react";
 import {CalendarDays, ChevronLeft, ChevronRight, Clock3, Compass, ExternalLink, MapPinned, Printer, Copy, Sparkles, LocateFixed, Lightbulb} from "lucide-react";
+import PlacePhoto from "@/components/place-photo";
 
 export type TripStop={time:string;name:string;description:string;area:string;category:string;tip:string;searchQuery:string};
 export type TripDay={day:number;title:string;morning:string;afternoon:string;evening:string;stops?:TripStop[]};
@@ -95,9 +96,14 @@ export default function TripDashboard({trip,startDate,endDate,travelers,copyStat
               <div className="trip-activity-meta"><span><Clock3 size={13} aria-hidden="true"/> {stop.time}</span><span>{categoryIcon(stop.category)} {stop.category}</span></div>
               <h3>{stop.name}</h3>
               <p className="trip-activity-area"><MapPinned size={13} aria-hidden="true"/>{stop.area}</p>
-              <p className="trip-activity-description">{stop.description}</p>
-              <div className="trip-activity-tip"><Lightbulb size={15} aria-hidden="true"/><span><strong>Aero tip:</strong> {stop.tip}</span></div>
-              <a className="trip-activity-map-link" href={safeMapsSearch(stop.searchQuery)} target="_blank" rel="noopener noreferrer">View place in Google Maps <ExternalLink size={13} aria-hidden="true"/></a>
+              {index===activeIndex&&<div className="trip-activity-detail">
+                <PlacePhoto name={stop.name} query={stop.searchQuery} priority={stopIndex===0}/>
+                <div className="trip-activity-info">
+                  <p className="trip-activity-description">{stop.description}</p>
+                  <div className="trip-activity-tip"><Lightbulb size={15} aria-hidden="true"/><span><strong>Aero tip:</strong> {stop.tip}</span></div>
+                  <a className="trip-activity-map-link" href={safeMapsSearch(stop.searchQuery)} target="_blank" rel="noopener noreferrer">View place in Google Maps <ExternalLink size={13} aria-hidden="true"/></a>
+                </div>
+              </div>}
             </div>
           </li>)}</ol>:<div className="trip-outline"><p><strong>Morning</strong>{item.morning}</p><p><strong>Afternoon</strong>{item.afternoon}</p><p><strong>Evening</strong>{item.evening}</p></div>}
           {canNavigate&&<div className="trip-day-pagination"><button type="button" disabled={activeIndex===0} onClick={()=>{setSelected(activeIndex-1);setFocusedStop(null);}}><ChevronLeft size={15}/> Previous day</button><button type="button" disabled={activeIndex===trip.days.length-1} onClick={()=>{setSelected(activeIndex+1);setFocusedStop(null);}}>Next day <ChevronRight size={15}/></button></div>}

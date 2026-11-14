@@ -31,7 +31,7 @@ export async function POST(request:Request){
     return NextResponse.json({error:"Enter a trip and a clear edit request (5–500 characters)."},{status:400});
   const auth=await authenticate(request).catch(()=>null);
   if(!auth)return NextResponse.json({error:"Sign in to edit your saved trip."},{status:401});
-  const fetched=await rest("trips?id=eq."+encodeURIComponent(tripId)+"&select=id,user_id,destination,start_date,end_date,itinerary,status,ai_edits_used","GET",auth.token).catch(()=>null);
+  const fetched=await rest("trips?id=eq."+encodeURIComponent(tripId)+"&archived_at=is.null&select=id,user_id,destination,start_date,end_date,itinerary,status,ai_edits_used","GET",auth.token).catch(()=>null);
   if(!fetched?.ok)return NextResponse.json({error:"Unable to access the trip."},{status:502});
   const rows=await fetched.json() as StoredTrip[];
   const trip=rows[0];
@@ -48,12 +48,14 @@ export async function POST(request:Request){
     if(!Array.isArray(parsed.days)||parsed.days.length!==trip.itinerary.days.length)throw Error("Invalid day count");
     const days=parsed.days.map(validateDay);
     if(days.some(day=>!day))throw Error("Invalid day structure");
-    const saved=await rest("trips?id=eq."+encodeURIComponent(tripId),"PATCH","",{itinerary:{days},edit_state:"completed",updated_at:new Date().toISOString()},true);
+    const saved=await rest("trips?id=eq."+encodeURIComponent(tripId)+"&user_id=eq."+encodeURIComponent(auth.user.id)+"&archived_at=is.null&edit_state=eq.in_progress","PATCH","",{itinerary:{days},edit_state:"completed",updated_at:new Date().toISOString()},true);
     if(!saved.ok)throw Error("Save failed");
+    const changed=await saved.json() as Array<{id:string}>;
+    if(changed.length!==1)throw Error("Trip archived or edit state changed");
     return NextResponse.json({destination:trip.destination,days,mode:"ai-unverified",tripId,notice:"One Aero Free edit used. Verify activity details before visiting."},{headers:{"Cache-Control":"no-store"}});
   }catch(e){
     console.error("[Aero] Free edit failed",{code:e instanceof AiProviderError?e.code:"EDIT_FAILED"});
-    const reset=await rest("trips?id=eq."+encodeURIComponent(tripId)+"&edit_state=eq.in_progress","PATCH","",{edit_state:"failed",updated_at:new Date().toISOString()},true).catch(()=>null);
+    const reset=await rest("trips?id=eq."+encodeURIComponent(tripId)+"&user_id=eq."+encodeURIComponent(auth.user.id)+"&archived_at=is.null&edit_state=eq.in_progress","PATCH","",{edit_state:"failed",updated_at:new Date().toISOString()},true).catch(()=>null);
     if(!reset?.ok)return NextResponse.json({error:"Aero couldn't complete the edit and couldn't release the retry lock. Contact support."},{status:503});
     return NextResponse.json({error:"Aero couldn't complete your edit. You can retry up to three provider attempts without using an extra edit.",retryAllowed:true},{status:503});
   }

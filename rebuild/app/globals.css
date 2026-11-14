@@ -87,3 +87,21 @@
   .trip-dashboard-main{border:0}.trip-activity{break-inside:avoid}.trip-activity-tip{background:#fff!important;border:1px solid #ddd}
   .trip-dashboard-hero-top{display:none}
 }
+
+
+/* Place photography: native lazy-loaded, no third-party key or URL exposed */
+.trip-activity-detail{display:grid;grid-template-columns:minmax(148px,36%) minmax(0,1fr);gap:17px;align-items:start;margin-top:13px}
+.trip-activity-info{min-width:0}.trip-activity-detail>.trip-activity-info:only-child{grid-column:1/-1}
+.aero-place-photo{position:relative;margin:0;min-width:0;overflow:hidden;border:1px solid #dfe9df;border-radius:13px;background:#edf3ed}
+.aero-place-photo>img,.aero-photo-placeholder{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.aero-place-photo>img{background:#edf3ed}
+.aero-photo-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#779280;font-size:11px;text-align:center;padding:12px}
+.aero-photo-placeholder svg{color:#8fa99a}.aero-photo-shimmer{display:block;width:65%;height:14px;border-radius:20px;background:#d4e4d6;animation:aero-photo-pulse 1.6s ease-in-out infinite}
+@keyframes aero-photo-pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.aero-place-photo figcaption{display:flex;flex-direction:column;gap:4px;padding:7px 9px;background:#f9fbf8;color:#667c6e;font-size:9px;line-height:1.5}
+.aero-place-photo figcaption>span:first-child{display:flex;align-items:center;gap:4px}
+.aero-photo-credits{display:flex;gap:5px;flex-wrap:wrap}
+.aero-photo-credits>a{color:#326e52;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:700px){.trip-activity-detail{grid-template-columns:1fr}.aero-place-photo{max-width:100%}.aero-place-photo>img,.aero-photo-placeholder{aspect-ratio:16/9}}
+@media(prefers-reduced-motion:reduce){.aero-photo-shimmer{animation:none}}
+@media print{.trip-activity-detail{display:block}.aero-place-photo{display:none!important}.trip-activity-description,.trip-activity-tip{color:#333}}

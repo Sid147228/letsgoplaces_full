@@ -6,7 +6,6 @@ export const dynamic="force-dynamic";
 type Attribution={displayName?:string;uri?:string};
 type Photo={name?:string;authorAttributions?:Attribution[]};
 type Place={displayName?:{text?:string};photos?:Photo[]};
-const photoPattern=/^places\/[A-Za-z0-9_-]{5,}\//; // Extra validation below before proxying
 const safePhoto=/^places\/[A-Za-z0-9_-]{5,}\/photos\/[A-Za-z0-9_-]{10,600}$/;
 
 const unavailable=()=>NextResponse.json({photo:null},{headers:{"Cache-Control":"no-store"}});

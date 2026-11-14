@@ -16,6 +16,7 @@ export default function Home() {
           <nav className="header-nav" aria-label="Main navigation">
             <a href="#how-it-works">How it works</a>
             <a href="#destinations">Explore destinations</a>
+            <Link href="/my-trips">My Trips</Link>
           </nav>
           <Link href="/plan" className="header-button">Plan my trip <span aria-hidden="true">↗</span></Link>
         </div>

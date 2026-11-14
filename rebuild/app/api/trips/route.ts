@@ -40,6 +40,8 @@ export async function POST(request:Request){
   const place=destination.trim();
   const provider=configuredProvider();
   // Only live AI trips consume the lifetime allowance; preview samples do not.
+  const accountsPartiallyConfigured=Boolean(process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL||process.env.SUPABASE_ANON_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY);
+  if(accountsPartiallyConfigured&&(!supabaseConfigured()||!serviceConfigured()))return NextResponse.json({error:"Aero accounts are not fully configured. Please contact support.",code:"ACCOUNTS_INCOMPLETE"},{status:503,headers:{"Cache-Control":"no-store"}});
   const persistentMode=Boolean(provider)&&supabaseConfigured()&&serviceConfigured();
   let tripId:string|undefined;
   if(persistentMode){

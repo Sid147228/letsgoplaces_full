@@ -1,8 +1,8 @@
+import {validTripId} from "@/lib/trip-policy";
 import {NextResponse} from "next/server";
 import {authenticate,rest,supabaseConfigured} from "@/lib/supabase-server";
 export const dynamic="force-dynamic";
 const headers={"Cache-Control":"no-store"};
-const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function POST(request:Request){
   if(!supabaseConfigured())return NextResponse.json({error:"Trip accounts are not configured yet."},{status:503,headers});
@@ -10,7 +10,7 @@ export async function POST(request:Request){
   try{body=await request.json();}catch{return NextResponse.json({error:"Invalid request."},{status:400,headers});}
   if(!body||typeof body!=="object"||Array.isArray(body))return NextResponse.json({error:"Invalid request."},{status:400,headers});
   const {tripId}=body as Record<string,unknown>;
-  if(typeof tripId!=="string"||!uuid.test(tripId))
+  if(!validTripId(tripId))
     return NextResponse.json({error:"Invalid trip identifier."},{status:400,headers});
   try{
     const auth=await authenticate(request);

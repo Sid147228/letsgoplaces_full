@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import type {Session} from "@supabase/supabase-js";
 import AeroAuth from "@/components/aero-auth";
@@ -26,7 +26,7 @@ export default function Planner() {
   const [loading,setLoading]=useState(false);
   const [copyStatus,setCopyStatus]=useState("");
   const [session,setSession]=useState<Session|null>(null);
-  const [savedTrips,setSavedTrips]=useState<Array<{id:string;destination:string;start_date:string;end_date:string;status:string;ai_edits_used?:number;edit_state?:string;edit_attempts?:number;itinerary?:{days?:Day[]}|null}>>([]);
+  const [savedTrips,setSavedTrips]=useState<Array<{id:string;destination:string;start_date:string;end_date:string;travelers?:number;status:string;ai_edits_used?:number;edit_state?:string;edit_attempts?:number;itinerary?:{days?:Day[]}|null}>>([]);
   const [savedError,setSavedError]=useState("");
   const [editInstruction,setEditInstruction]=useState("");
   const [editBusy,setEditBusy]=useState(false);
@@ -41,6 +41,30 @@ export default function Planner() {
     }
     setSession(next);
   },[]);
+  useEffect(()=>{
+    if(!session?.access_token)return;
+    const tripId=new URLSearchParams(window.location.search).get("tripId");
+    if(!tripId||!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(tripId))return;
+    const controller=new AbortController();
+    void (async()=>{
+      try{
+        const response=await fetch("/api/trips/mine",{signal:controller.signal,cache:"no-store",headers:{Authorization:"Bearer "+session.access_token}});
+        const payload=await response.json() as {trips?:typeof savedTrips;error?:string};
+        if(!response.ok)throw Error(payload.error||"Could not retrieve saved trip.");
+        const trip=payload.trips?.find(item=>item.id===tripId);
+        if(!trip?.itinerary?.days?.length)throw Error("That saved itinerary is unavailable.");
+        if(controller.signal.aborted)return;
+        setStartDate(trip.start_date);setEndDate(trip.end_date);
+        setTravelers(trip.travelers||2);
+        setEditUsed(trip.edit_state==="completed"||(trip.edit_attempts||0)>=3);
+        setResult({destination:trip.destination,days:trip.itinerary.days,mode:"ai-unverified",tripId:trip.id,notice:"Previously saved Aero itinerary. Verify places and opening hours before visiting."});
+        setSavedTrips(payload.trips||[]);
+      }catch(cause){
+        if(!controller.signal.aborted)setSavedError(cause instanceof Error?cause.message:"Unable to load saved trip.");
+      }
+    })();
+    return()=>controller.abort();
+  },[session?.user.id]); // Load only when account changes, not on token refresh.
   const days=dayCount(startDate,endDate);
   function next(){setError("");if(step===1){if(!destination.trim()||!startDate||!endDate||days<1){setError("Enter your destination and valid travel dates.");return;}if(days>3){setError("Aero Free supports trips of up to 3 days. Aero Plus is coming soon.");return;}}setStep(Math.min(3,step+1));}
   function toggleInterest(item:string){setInterests(old=>old.includes(item)?old.filter(x=>x!==item):[...old,item]);}
@@ -92,7 +116,7 @@ export default function Planner() {
     finally{setLoading(false);}
   }
   return <div className="planner-page">
-    <header className="site-header"><div className="shell header-inner"><Link href="/" className="brand"><span className="brand-symbol">✳</span>lets<span className="brand-accent">g0</span>places<span className="brand-period">.</span></Link><Link href="/" className="planner-home">← Back to home</Link></div></header>
+    <header className="site-header"><div className="shell header-inner"><Link href="/" className="brand"><span className="brand-symbol">✳</span>lets<span className="brand-accent">g0</span>places<span className="brand-period">.</span></Link><div className="planner-header-links"><Link href="/my-trips" className="planner-home">My Trips</Link><Link href="/" className="planner-home">← Back to home</Link></div></div></header>
     <main className="planner-shell">
       {!result?<><div className="planner-intro"><span className="planner-eyebrow">✦ MEET AERO, YOUR TRAVEL COMPANION</span><h1>A great trip starts <em>here.</em></h1><p>A few details, and we'll help you shape your next getaway.</p></div>
         <AeroAuth onSession={handleSession}/>{session&&<div className="saved-trip-controls"><button type="button" onClick={loadSavedTrips}>View saved trips</button>{savedError&&<span role="alert">{savedError}</span>}{savedTrips.map(trip=><button key={trip.id} type="button" disabled={!trip.itinerary?.days?.length} onClick={()=>{if(trip.itinerary?.days){setStartDate(trip.start_date);setEndDate(trip.end_date);setResult({destination:trip.destination,days:trip.itinerary.days,mode:"ai-unverified",tripId:trip.id,notice:"Previously saved AI itinerary; places and opening hours are not live-verified."});setEditUsed(trip.edit_state==="completed"||(trip.edit_attempts||0)>=3);setEditError("");}}}>{trip.destination} · {trip.status}</button>)}</div>}<div className="planner-progress"><span>YOUR TRIP, YOUR WAY</span><span>STEP {step} OF 3</span></div><div className="planner-progress-track"><div style={{width:`${step/3*100}%`}}/></div>
@@ -110,7 +134,7 @@ export default function Planner() {
           travelers={travelers}
           copyStatus={copyStatus}
           onCopy={copyItinerary}
-          onBack={()=>{setResult(null);setStep(1);setCopyStatus("");}}
+          onBack={()=>{setResult(null);setStep(1);setCopyStatus("");if(typeof window!=="undefined"&&window.location.search)window.history.replaceState(null,"","/plan");}}
           editPanel={result.tripId&&session&&<section className="aero-edit-panel"><h2>Refine your itinerary with Aero</h2><p>Aero Free includes one AI edit per lifetime trip. Ask for a change such as “Make day two more relaxed and include a museum.”</p><textarea aria-label="Describe your itinerary edit" value={editInstruction} onChange={e=>setEditInstruction(e.target.value)} rows={3} maxLength={500} disabled={editUsed||editBusy} placeholder="What would you like Aero to change?"/><div className="aero-edit-actions"><button type="button" onClick={applyFreeEdit} disabled={editUsed||editBusy||editInstruction.trim().length<5}>{editBusy?"Updating itinerary…":editUsed?"Free AI edit used":"Apply my free AI edit"}</button><span>{editUsed?"0 edits remaining":"1 free edit remaining"}</span></div>{editError&&<p role="alert" className="planner-error">{editError}</p>}</section>}
         />}
     </main>

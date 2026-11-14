@@ -1,14 +1,10 @@
+import {validDate,freeTripDays} from "@/lib/trip-policy";
 import {configuredProvider,generateItineraryJson,AiProviderError} from "@/lib/ai-provider";
 import {authenticate,rest,serviceConfigured,supabaseConfigured} from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 
 type Stop = {time:string;name:string;description:string;area:string;category:string;tip:string;searchQuery:string};
 type ActivityDay = {day:number;title:string;morning:string;afternoon:string;evening:string;stops?:Stop[]};
-function validDate(value:unknown):value is string {
-  if(typeof value!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
-  const parsed=new Date(value+"T00:00:00Z");
-  return !Number.isNaN(parsed.valueOf())&&parsed.toISOString().slice(0,10)===value;
-}
 function cleanStop(value:unknown):Stop|null{
   if(!value||typeof value!=="object"||Array.isArray(value))return null;
   const s=value as Record<string,unknown>;
@@ -31,7 +27,7 @@ export async function POST(request:Request){
   catch{return NextResponse.json({error:"Invalid request."},{status:400});}
   const {destination,startDate,endDate,budget,pace,interests,travelers}=body;
   if(typeof destination!=="string"||!destination.trim()||destination.length>120||!validDate(startDate)||!validDate(endDate))return NextResponse.json({error:"Enter a destination and valid travel dates."},{status:400});
-  const length=Math.round((Date.parse(endDate)-Date.parse(startDate))/86400000)+1;
+  const length=freeTripDays(startDate,endDate);
   if(length<1||length>3)return NextResponse.json({error:"Aero Free supports trips of 1 to 3 days."},{status:400});
   const safeBudget=["budget","moderate","luxury"].includes(String(budget))?String(budget):"moderate";
   const safePace=["relaxed","balanced","active"].includes(String(pace))?String(pace):"balanced";

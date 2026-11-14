@@ -2,9 +2,9 @@
 
 ## Current behavior
 - Without GEMINI_API_KEY or OPENAI_API_KEY, /api/trips returns **HTTP 503 AI_NOT_CONFIGURED**, not a fake itinerary.
-- With GEMINI_API_KEY or OPENAI_API_KEY but without all Supabase credentials, /api/trips generates **unverified AI** itineraries; these are not persisted and the lifetime allowance is not enforceable. Provider failures return explicit, safe HTTP 503 errors and a diagnostic code.
-- With an AI provider + Supabase credentials, the API **requires a Supabase access token** in the Authorization: Bearer header and atomically claims one lifetime trip per account. **The current planner UI does not yet sign users in or send this token**. Do not enable all credentials for public users until the sign-in flow is implemented.
-- There is no Google Places verification or map integration yet.
+- With an AI provider and **no Supabase variables set**, /api/trips generates an unverified, unsaved itinerary. If **some** Supabase credentials are set but others are missing, generation fails closed with HTTP 503 instead of bypassing entitlement rules. Provider failures return safe HTTP 503 codes.
+- With an AI provider + complete Supabase credentials, the API **requires a Supabase access token** and atomically claims one lifetime trip per account. The planner contains passwordless email sign-in, sends the bearer token and offers a My Trips library; however, the end-to-end flow still needs testing on a dedicated active Supabase project.
+- Place photo rendering is optional and requires its own Google Places API key; full verified maps and locations are not yet implemented.
 
 ## Server environment variables
 - GEMINI_API_KEY (server only; preferred when configured)\n- GEMINI_MODEL (optional; defaults to gemini-3.5-flash-lite)\n- OPENAI_API_KEY (server only; fallback when Gemini key is absent)
@@ -59,3 +59,14 @@ Latest Supabase integration includes passwordless email login, owner-only saved-
 
 ### Gemini model availability (November 2026)
 New Gemini API projects may receive HTTP 404 for Gemini 2.5 models. Aero defaults to `gemini-3.5-flash-lite` and retries `gemini-3.8-flash` only when the primary model returns 404. `GEMINI_MODEL` can override the primary model; check current account entitlements and free-tier quotas independently. The preview project is separate from the legacy production project.
+
+## My Trips, archive and latest release checkpoint (14 Nov 2026)
+
+- New `/my-trips` authenticated library with owner-visible destination cards, dates, trip status and reopen links to `/plan?tripId=<uuid>`.
+- Owner-only `POST /api/trips/archive` invokes `archive_free_trip`. It **removes the itinerary content** and hides the record from My Trips, but intentionally **preserves a minimal claim row** for lifetime free-trip enforcement. This is NOT full account/data deletion. Full erasure must be a separate user-rights/account deletion flow.
+- Apply **three migrations in order** on a **new, dedicated rebuild Supabase project**: `20261111_aero_free.sql`, `20261112_aero_one_edit.sql`, `20261114_aero_archive.sql`.
+- Auth email Redirect URLs: configure rebuild preview `/plan` and `/my-trips` in Supabase; the login component redirects to `/plan`.
+- Needed browser env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`; needed server env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server-only). No keys in source control.
+- `npm run check` runs TypeScript and built-in Node policy tests; `npm test` checks calendar dates, three-day limits and UUID parsing. Node 22+ is needed for TS stripping.
+- Before enabling broadly: test cross-account isolation, archived-trip visibility, DB claim concurrency and restore prevention; review RLS and PostgREST access; run SQL security advisors.
+- Do not apply migrations to the dormant legacy database. Supabase organization/project choice is pending.

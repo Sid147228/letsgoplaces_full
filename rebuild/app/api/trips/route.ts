@@ -40,6 +40,7 @@ export async function POST(request:Request){
   if(accountsPartiallyConfigured&&(!supabaseConfigured()||!serviceConfigured()))return NextResponse.json({error:"Aero accounts are not fully configured. Please contact support.",code:"ACCOUNTS_INCOMPLETE"},{status:503,headers:{"Cache-Control":"no-store"}});
   const persistentMode=Boolean(provider)&&supabaseConfigured()&&serviceConfigured();
   let tripId:string|undefined;
+  let generationAttempt:number|undefined;
   if(persistentMode){
     let auth;
     try{auth=await authenticate(request);}catch{return NextResponse.json({error:"Authentication temporarily unavailable."},{status:503});}
@@ -51,9 +52,10 @@ export async function POST(request:Request){
       const detail=await claimed.json().catch(()=>({})) as {code?:string};
       return NextResponse.json({error:detail.code==="23505"?"Your lifetime Aero Free trip has already been used.":"Could not reserve your free trip."},{status:detail.code==="23505"?409:502});
     }
-    const record=await claimed.json() as {id?:string};
+    const record=await claimed.json() as {id?:string;generation_attempts?:number};
     if(!record.id)return NextResponse.json({error:"Could not reserve your trip."},{status:502});
     tripId=record.id;
+    generationAttempt=record.generation_attempts;
   }
   if(!provider)return NextResponse.json({error:"Aero AI is not enabled for this deployment. Add GEMINI_API_KEY to the correct Vercel project and deployment environment.",code:"AI_NOT_CONFIGURED"},{status:503,headers:{"Cache-Control":"no-store"}});
   try{
@@ -63,7 +65,8 @@ export async function POST(request:Request){
     const days=parsed.days.map((day,index)=>cleanDay(day,index));
     if(days.some(day=>!day))throw new AiProviderError("AI_RESPONSE_INVALID",provider);
     if(tripId){
-      const saved=await rest("trips?id=eq."+encodeURIComponent(tripId)+"&archived_at=is.null","PATCH","",{itinerary:{days},status:"ready",updated_at:new Date().toISOString()},true);
+      const filter="trips?id=eq."+encodeURIComponent(tripId)+"&archived_at=is.null&status=eq.pending&generation_attempts=eq."+generationAttempt;
+      const saved=await rest(filter,"PATCH","",{itinerary:{days},status:"ready",updated_at:new Date().toISOString()},true);
       if(!saved.ok)return NextResponse.json({error:"Trip generated but could not be saved. Contact support before retrying."},{status:502});
       const updated=await saved.json() as Array<{id:string}>;
       if(updated.length!==1)return NextResponse.json({error:"Your trip was removed while Aero was generating it. No itinerary was restored."},{status:409});
@@ -73,8 +76,9 @@ export async function POST(request:Request){
     const code=cause instanceof AiProviderError?cause.code:"AI_REQUEST_FAILED";
     console.error("[Aero] Itinerary request failed",{code,provider});
     if(tripId){
-      await rest("trips?id=eq."+encodeURIComponent(tripId)+"&archived_at=is.null","PATCH","",{status:"failed",updated_at:new Date().toISOString()},true).catch(()=>{});
-      return NextResponse.json({error:"Aero could not generate your trip. Your reservation is retained; contact support to retry."},{status:503});
+      await rest("trips?id=eq."+encodeURIComponent(tripId)+"&archived_at=is.null&status=eq.pending&generation_attempts=eq."+generationAttempt,"PATCH","",{status:"failed",updated_at:new Date().toISOString()},true).catch(()=>{});
+      const retryAllowed=typeof generationAttempt==="number"&&generationAttempt<3;
+      return NextResponse.json({error:retryAllowed?"Aero could not complete your itinerary. Your free trip remains reserved; you can try generating again.":"Aero could not complete your itinerary after three attempts. Your reservation remains saved; contact support.",code,retryAllowed},{status:503,headers:{"Cache-Control":"no-store"}});
     }
     const message=code==="AI_AUTH_FAILED"?"Aero cannot authenticate with the selected AI provider. Verify the API key in Vercel.":code==="AI_RATE_LIMITED"?"The selected AI provider has reached a quota or rate limit. Check its API usage limits.":code==="AI_MODEL_UNAVAILABLE"?"The configured AI model is unavailable for this API project.":code==="AI_TIMEOUT"?"Aero took too long to generate the itinerary. Try again.":code==="AI_RESPONSE_INVALID"?"Aero returned an incomplete itinerary. Please try again.":"Aero could not generate an itinerary. Please try again or check Vercel function logs.";
     return NextResponse.json({error:message,code},{status:503,headers:{"Cache-Control":"no-store"}});

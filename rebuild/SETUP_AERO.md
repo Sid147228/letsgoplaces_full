@@ -70,3 +70,10 @@ New Gemini API projects may receive HTTP 404 for Gemini 2.5 models. Aero default
 - `npm run check` runs TypeScript and built-in Node policy tests; `npm test` checks calendar dates, three-day limits and UUID parsing. Node 22+ is needed for TS stripping.
 - Before enabling broadly: test cross-account isolation, archived-trip visibility, DB claim concurrency and restore prevention; review RLS and PostgREST access; run SQL security advisors.
 - Do not apply migrations to the dormant legacy database. Supabase organization/project choice is pending.
+
+## Failed-trip retry improvement (15 Nov 2026)
+
+- Apply `20261115_aero_retry_failed_trip.sql` **after** the three prior migrations. This adds `generation_attempts` and changes the `claim_free_trip` RPC so a previously failed, non-archived trip can retry up to twice more on the **same existing lifetime claim row**. A successful or archived trip can never be regenerated as a new free trip.
+- The API saves only if `status=pending`, `archived_at IS NULL`, and the generation attempt number still matches, so older requests cannot overwrite a newer retry. Failed save operations also mark the reservation failed when possible.
+- There is still no automated recovery for a request that was terminated before marking its row failed; a stuck `pending` reservation requires operator intervention until a safe stale-lease recovery protocol is implemented.
+- The prior legacy Supabase project was still `COMING_UP` when checked. **None of these migrations has been applied to it**, and it must be inspected for existing tables/users before applying any changes.

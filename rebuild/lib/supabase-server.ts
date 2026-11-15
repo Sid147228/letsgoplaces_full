@@ -16,5 +16,10 @@ export async function authenticate(request:Request):Promise<{token:string;user:A
 export async function rest(path:string,method:string,token:string,body?:unknown,service=false):Promise<Response>{
   const key=service?process.env.SUPABASE_SERVICE_ROLE_KEY:anon();
   if(!base()||!key)throw Error("Supabase is not configured");
-  return fetch(base()+"/rest/v1/"+path,{method,cache:"no-store",headers:{apikey:key,Authorization:"Bearer "+(service?key:token),"Content-Type":"application/json",Prefer:"return=representation"},body:body===undefined?undefined:JSON.stringify(body)});
+  // Supabase sb_secret_* API keys are not JWTs: pass them in apikey only.
+  // Legacy service_role JWT keys may be used as Bearer tokens until retired.
+  const headers:Record<string,string>={apikey:key,"Content-Type":"application/json",Prefer:"return=representation"};
+  if(!service)headers.Authorization="Bearer "+token;
+  else if(!key.startsWith("sb_secret_"))headers.Authorization="Bearer "+key;
+  return fetch(base()+"/rest/v1/"+path,{method,cache:"no-store",headers,body:body===undefined?undefined:JSON.stringify(body)});
 }

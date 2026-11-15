@@ -67,7 +67,7 @@ export async function POST(request:Request){
     if(tripId){
       const filter="trips?id=eq."+encodeURIComponent(tripId)+"&archived_at=is.null&status=eq.pending&generation_attempts=eq."+generationAttempt;
       const saved=await rest(filter,"PATCH","",{itinerary:{days},status:"ready",updated_at:new Date().toISOString()},true);
-      if(!saved.ok)return NextResponse.json({error:"Trip generated but could not be saved. Contact support before retrying."},{status:502});
+      if(!saved.ok)throw new Error("TRIP_SAVE_FAILED");
       const updated=await saved.json() as Array<{id:string}>;
       if(updated.length!==1)return NextResponse.json({error:"Your trip was removed while Aero was generating it. No itinerary was restored."},{status:409});
     }
